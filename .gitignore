@@ -4,10 +4,13 @@ __pycache__/
 *$py.class
 
 #Directories 
+bert_input/
+bert_output/
 Data/
 DATA/
 Model/
 Models/
+bert/
 MODEL/
 MODELS/
 *backup*/
