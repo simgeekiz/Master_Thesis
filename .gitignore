@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 
 #Directories 
+*.h5
+Preds/
 bert_input/
 bert_output/
 Data/
