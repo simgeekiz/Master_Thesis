@@ -6,8 +6,16 @@ from IPython import display
 
 class PlotCurves(Callback):
 
-    def __init__(self, model_name):
+    def __init__(self, model_name, save=True):
         self.model_name = model_name
+        self.save = save
+        
+        self.model_dir = './Model/' + self.model_name
+        os.makedirs(self.model_dir, exist_ok=True)
+        self.meta_file = os.path.join(self.model_dir, 'model_metadata.txt')
+        
+        with open(self.meta_file, 'w') as f:
+            f.write('\n----------------\n')
         
     def on_train_begin(self, logs={}):
         self.epoch = 0
@@ -23,8 +31,11 @@ class PlotCurves(Callback):
         self.best_val_acc = 0
         self.best_val_f1 = 0
         self.fig = plt.figure(figsize=(10, 5))
-
         self.logs = []
+        
+        with open(self.meta_file, 'a') as f:
+            self.model.summary(print_fn=lambda x: f.write(x + '\n'))
+            f.write('\n')
 
     def on_epoch_end(self, epoch, logs={}):
 
@@ -39,11 +50,9 @@ class PlotCurves(Callback):
         self.val_f1.append(logs.get('val_f1_score'))
         self.epoch += 1
 
-        model_dir = './Model/' + self.model_name
-        os.makedirs(model_dir, exist_ok=True)
-
-        # Save at each epoch
-#         self.model.save(os.path.join(model_dir, self.model_name + '_epoch_' + str(self.epoch) + '.h5'))
+        if self.save:
+            # Save at each epoch
+            self.model.save(os.path.join(self.model_dir, self.model_name + '_epoch_' + str(self.epoch) + '.h5'))
         
         # (Possibly) update best validation accuracy
         if self.val_acc[-1] > self.best_val_acc:
@@ -52,10 +61,12 @@ class PlotCurves(Callback):
 
         # (Possibly) update best validation F1-score
         if self.val_f1[-1] > self.best_val_f1:
-            with open(os.path.join(model_dir, 'best_f1_model.txt'), 'w') as f:
-                f.write(str(self.epoch) + ' => f1:' + str(self.best_val_f1))
             self.best_val_f1 = self.val_f1[-1]
             self.best_f1_epoch = self.epoch
+            
+        with open(self.meta_file, 'a') as f:
+            f.write(str(self.epoch) + ' => val_f1: ' + str(self.val_f1[-1]) + ' val_acc: ' + str(self.val_acc[-1]))
+            f.write('\n')
 
         display.clear_output(wait=True)
         plt.plot(self.x, self.losses, label="loss")
@@ -69,4 +80,5 @@ class PlotCurves(Callback):
                   'Best validation F1-score = {:.2f}% on epoch {} of {}'.format(
                         100. * self.best_val_acc, self.best_epoch, self.epoch,
                         100. * self.best_val_f1, self.best_f1_epoch, self.epoch))
+        plt.savefig(os.path.join(self.model_dir, self.model_name + '.png'))
         plt.show();
