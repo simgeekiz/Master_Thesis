@@ -1,25 +1,44 @@
 import tensorflow as tf
-from sklearn.metrics import classification_report#, accuracy_score
-# from sklearn import metrics
+# from sklearn.metrics import classification_report#, accuracy_score
 
-def f1_score(y_true, y_pred):
-#     y_true = K.flatten(y_true)
-#     y_pred = K.flatten(y_pred)
+def f1_macro(y_true, y_pred):
+    
     y_true = tf.cast(y_true, "int32")
     y_pred = tf.cast(tf.round(y_pred), "int32")
-    y_correct = y_true * y_pred
-    sum_true = tf.reduce_sum(y_true, axis=1)
-    sum_pred = tf.reduce_sum(y_pred, axis=1)
-    sum_correct = tf.reduce_sum(y_correct, axis=1)
-    precision = sum_correct / sum_pred
-    recall = sum_correct / sum_true
-    f_score = 2 * precision * recall / (precision + recall)
-    f_score = tf.where(tf.is_nan(f_score), tf.zeros_like(f_score), f_score)
-    return tf.reduce_mean(f_score)
 
-def acc_seq(y_true, y_pred):
+    # tp = [10, 1]: each column is tp of a class
+    tp = tf.reduce_sum(y_true*y_pred, 0)
+    fp = tf.reduce_sum((1-y_true)*y_pred, 0)
+    fn = tf.reduce_sum(y_true*(1-y_pred), 0)
+
+    p = tp / (tp + fp)
+    r = tp / (tp + fn)
+
+    f1 = 2 * p * r / (p + r)
+    f1 = tf.where(tf.math.is_nan(f1), tf.zeros_like(f1), f1)
     
-    y_true = flatten_y(y_true)
-    y_pred = flatten_y(y_pred)
+    return tf.reduce_mean(f1)
+
+def f1_micro(y_true, y_pred):
     
-    return accuracy_score(y_true, y_pred)
+    y_true = tf.cast(y_true, "int32")
+    y_pred = tf.cast(tf.round(y_pred), "int32")
+    
+    tp = tf.reduce_sum(y_true*y_pred, axis=1)
+    tp_fn = tf.reduce_sum(y_true, axis=1)
+    tp_fp = tf.reduce_sum(y_pred, axis=1)
+        
+    p = tp / tp_fp
+    r = tp / tp_fn
+    
+    f1 = 2 * p * r / (p + r)
+    f1 = tf.where(tf.math.is_nan(f1), tf.zeros_like(f1), f1)
+    
+    return tf.reduce_mean(f1)
+
+# def acc_seq(y_true, y_pred):
+    
+#     y_true = flatten_y(y_true)
+#     y_pred = flatten_y(y_pred)
+    
+#     return accuracy_score(y_true, y_pred)

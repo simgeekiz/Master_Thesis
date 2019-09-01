@@ -19,17 +19,27 @@ class PlotCurves(Callback):
         
     def on_train_begin(self, logs={}):
         self.epoch = 0
-        self.best_epoch = 0
-        self.best_f1_epoch = 0
+        
+        self.best_acc_epoch = 0
+        self.best_f1_macro_epoch = 0
+        self.best_f1_micro_epoch = 0
+        
         self.x = []
         self.losses = []
+        
         self.acc = []
-        self.f1 = []
+        self.f1_macro = []
+        self.f1_micro = []
+        
         self.val_losses = []
         self.val_acc = []
-        self.val_f1 = []
+        self.val_f1_macro = []
+        self.val_f1_micro = []
+        
         self.best_val_acc = 0
-        self.best_val_f1 = 0
+        self.best_val_f1_macro = 0
+        self.best_val_f1_micro = 0
+
         self.fig = plt.figure(figsize=(10, 5))
         self.logs = []
         
@@ -43,11 +53,17 @@ class PlotCurves(Callback):
         self.logs.append(logs)
         self.x.append(self.epoch)
         self.losses.append(logs.get('loss'))
+        
         self.acc.append(logs.get('acc'))
-        self.f1.append(logs.get('f1_score'))
+        self.f1_macro.append(logs.get('f1_macro'))
+        self.f1_micro.append(logs.get('f1_micro'))
+        
         self.val_losses.append(logs.get('val_loss'))
+        
         self.val_acc.append(logs.get('val_acc'))
-        self.val_f1.append(logs.get('val_f1_score'))
+        self.val_f1_macro.append(logs.get('val_f1_macro'))
+        self.val_f1_micro.append(logs.get('val_f1_micro'))
+        
         self.epoch += 1
 
         if self.save:
@@ -57,15 +73,25 @@ class PlotCurves(Callback):
         # (Possibly) update best validation accuracy
         if self.val_acc[-1] > self.best_val_acc:
             self.best_val_acc = self.val_acc[-1]
-            self.best_epoch = self.epoch
+            self.best_acc_epoch = self.epoch
 
-        # (Possibly) update best validation F1-score
-        if self.val_f1[-1] > self.best_val_f1:
-            self.best_val_f1 = self.val_f1[-1]
-            self.best_f1_epoch = self.epoch
+        # (Possibly) update best validation F1-macro
+        if self.val_f1_macro[-1] > self.best_val_f1_macro:
+            self.best_val_f1_macro = self.val_f1_macro[-1]
+            self.best_f1_macro_epoch = self.epoch
+            self.model.save(os.path.join(self.model_dir, self.model_name + '_best_f1_macro_model.h5'))
+            
+        # (Possibly) update best validation F1-micro
+        if self.val_f1_micro[-1] > self.best_val_f1_micro:
+            self.best_val_f1_micro = self.val_f1_micro[-1]
+            self.best_f1_micro_epoch = self.epoch
+#             self.model.save(os.path.join(self.model_dir, self.model_name + '_best_f1_micro_model.h5'))
             
         with open(self.meta_file, 'a') as f:
-            f.write(str(self.epoch) + ' => val_f1: ' + str(self.val_f1[-1]) + ' val_acc: ' + str(self.val_acc[-1]))
+            f.write(str(self.epoch) 
+                    + ' => val_f1_macro: ' + str(self.val_f1_macro[-1]) 
+                    + ' | val_f1_micro: ' + str(self.val_f1_micro[-1]) 
+                    + ' | val_acc: ' + str(self.val_acc[-1]))
             f.write('\n')
 
         display.clear_output(wait=True)
@@ -73,12 +99,16 @@ class PlotCurves(Callback):
         plt.plot(self.x, self.val_losses, label="val_loss")
         plt.plot(self.x, self.acc, label="acc")
         plt.plot(self.x, self.val_acc, label="val_acc")
-        plt.plot(self.x, self.f1, label="f1_score")
-        plt.plot(self.x, self.val_f1, label="val_f1_score")
+        plt.plot(self.x, self.f1_macro, label="f1_macro")
+        plt.plot(self.x, self.val_f1_macro, label="val_f1_macro")
+        plt.plot(self.x, self.f1_micro, label="f1_micro")
+        plt.plot(self.x, self.val_f1_micro, label="val_f1_micro")
         plt.legend()
         plt.title('Best validation accuracy = {:.2f}% on epoch {} of {} \n' \
-                  'Best validation F1-score = {:.2f}% on epoch {} of {}'.format(
-                        100. * self.best_val_acc, self.best_epoch, self.epoch,
-                        100. * self.best_val_f1, self.best_f1_epoch, self.epoch))
+                  'Best validation F1-macro = {:.2f}% on epoch {} of {} \n' \
+                  'Best validation F1-micro = {:.2f}% on epoch {} of {} \n'.format(
+                        100. * self.best_val_acc, self.best_acc_epoch, self.epoch,
+                        100. * self.best_val_f1_macro, self.best_f1_macro_epoch, self.epoch,
+                        100. * self.best_val_f1_micro, self.best_f1_micro_epoch, self.epoch))
         plt.savefig(os.path.join(self.model_dir, self.model_name + '.png'))
         plt.show();
