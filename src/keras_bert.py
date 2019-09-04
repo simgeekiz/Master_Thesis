@@ -163,6 +163,7 @@ def convert_text_to_examples(texts, labels):
 
 
 class BertLayer(tf.keras.layers.Layer):
+    
     def __init__(
         self,
         n_fine_tune_layers=10,
@@ -243,7 +244,7 @@ class BertLayer(tf.keras.layers.Layer):
 
             mul_mask = lambda x, m: x * tf.expand_dims(m, axis=-1)
             masked_reduce_mean = lambda x, m: tf.reduce_sum(mul_mask(x, m), axis=1) / (
-                    tf.reduce_sum(m, axis=1, keepdims=True) + 1e-10)
+                                 tf.reduce_sum(m, axis=1, keepdims=True) + 1e-10)
             input_mask = tf.cast(input_mask, tf.float32)
             pooled = masked_reduce_mean(result, input_mask)
         else:
