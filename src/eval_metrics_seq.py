@@ -1,7 +1,11 @@
+
+import numpy as np
 import tensorflow as tf
-# from sklearn.metrics import classification_report#, accuracy_score
 
 def f1_macro(y_true, y_pred):
+      
+    y_true = tf.reshape(y_true, [-1, 2])
+    y_pred = tf.reshape(y_pred, [-1, 2])
     
     y_true = tf.cast(y_true, "int32")
     y_pred = tf.cast(tf.round(y_pred), "int32")
@@ -21,6 +25,9 @@ def f1_macro(y_true, y_pred):
 
 def f1_micro(y_true, y_pred):
     
+    y_true = tf.reshape(y_true, [-1, 2])
+    y_pred = tf.reshape(y_pred, [-1, 2])
+    
     y_true = tf.cast(y_true, "int32")
     y_pred = tf.cast(tf.round(y_pred), "int32")
     
@@ -35,10 +42,3 @@ def f1_micro(y_true, y_pred):
     f1 = tf.where(tf.math.is_nan(f1), tf.zeros_like(f1), f1)
     
     return tf.reduce_mean(f1)
-
-# def acc_seq(y_true, y_pred):
-    
-#     y_true = flatten_y(y_true)
-#     y_pred = flatten_y(y_pred)
-    
-#     return accuracy_score(y_true, y_pred)

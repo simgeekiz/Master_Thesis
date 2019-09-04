@@ -10,7 +10,7 @@ class PlotCurves(Callback):
         self.model_name = model_name
         self.save = save
         
-        self.model_dir = './Model/' + self.model_name
+        self.model_dir = './Model/' + self.model_name.split('model')[0] + 'model/' + self.model_name
         os.makedirs(self.model_dir, exist_ok=True)
         self.meta_file = os.path.join(self.model_dir, 'model_metadata.txt')
         
@@ -85,7 +85,6 @@ class PlotCurves(Callback):
         if self.val_f1_micro[-1] > self.best_val_f1_micro:
             self.best_val_f1_micro = self.val_f1_micro[-1]
             self.best_f1_micro_epoch = self.epoch
-#             self.model.save(os.path.join(self.model_dir, self.model_name + '_best_f1_micro_model.h5'))
             
         with open(self.meta_file, 'a') as f:
             f.write(str(self.epoch) 
