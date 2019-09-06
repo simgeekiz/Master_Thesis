@@ -6,11 +6,14 @@ from IPython import display
 
 class PlotCurves(Callback):
 
-    def __init__(self, model_name, save=True):
+    def __init__(self, model_name, model_dir=None, save=True):
         self.model_name = model_name
         self.save = save
         
-        self.model_dir = './Model/' + self.model_name.split('model')[0] + 'model/' + self.model_name
+        if model_dir:
+            self.model_dir = model_dir
+        else:
+            self.model_dir = './Model/' + self.model_name.split('model')[0] + 'model/' + self.model_name
         os.makedirs(self.model_dir, exist_ok=True)
         self.meta_file = os.path.join(self.model_dir, 'model_metadata.txt')
         
