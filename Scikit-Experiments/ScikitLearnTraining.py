@@ -24,10 +24,6 @@ from load_data import load_data
 ## Load Data
 train_data, valid_data, test_data, metadata = load_data('/kuacc/users/simgebasar/workspace/Master_Thesis')
 
-train_data = train_data[:1]
-valid_data = valid_data[:1]
-test_data = test_data[:1]
-
 main_folder = '/kuacc/users/simgebasar/workspace/Master_Thesis/Scikit-Experiments'
 
 number_stopwords = [str(i) for i in range(10001)] + ['0'+str(i) for i in range(100)] + ['000']
@@ -184,7 +180,7 @@ with open(opt_results_path, 'wb') as file_:
     
 ###
 with open(results_path, 'a') as f:
-    f.write('Finished')
+    f.write('\nFinished\n\n')
     
     
     
