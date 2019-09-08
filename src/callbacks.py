@@ -124,7 +124,7 @@ class PlotCurves(KerasCallback):
 
 class PlotCurvesTF(TensorflowCallback):
 
-    def __init__(self, model_name, model_dir=None, save_epochs=False, plt_show=True, jnote=False):
+    def __init__(self, model_name, model_dir=None, save_epochs=False, plt_show=True, jnote=True):
         self.model_name = model_name
         self.save_epochs = save_epochs
         self.plt_show = plt_show

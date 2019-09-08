@@ -364,10 +364,10 @@ if __name__ == '__main__':
                           batch_size=batch_size, 
                           validation_data=(X_val, y_val), 
                           callbacks=[
-                              PlotCurves(model_name=model_name, model_dir=model_dir, plt_show=False),
-                              ReduceLROnPlateau(monitor='val_f1_macro', patience=3, 
+                              PlotCurves(model_name=model_name, model_dir=model_dir, plt_show=False, jnote=False),
+                              ReduceLROnPlateau(monitor='val_f1_macro', patience=5, 
                                                 factor=0.1, min_lr=0.00001),
-                              EarlyStopping(monitor='val_f1_macro', min_delta=0, patience=5, mode='max')
+                              EarlyStopping(monitor='val_f1_macro', min_delta=0, patience=10, mode='max')
                           ])
                 
                 best_model = load_model(os.path.join(model_dir, model_name + '_best_f1_macro_model.h5'), 
