@@ -9,8 +9,7 @@ from tqdm import tqdm
 from tensorflow.keras import backend as K
 
 # Initialize session
-sess = tf.Session()
-
+sess = tf.compat.v1.Session()
 
 # Load all files from a directory in a DataFrame.
 def load_directory_data(directory):
@@ -275,9 +274,9 @@ def build_model(max_seq_length):
 
 
 def initialize_vars(sess):
-    sess.run(tf.local_variables_initializer())
-    sess.run(tf.global_variables_initializer())
-    sess.run(tf.tables_initializer())
+    sess.run(tf.compat.v1.local_variables_initializer())
+    sess.run(tf.compat.v1.global_variables_initializer())
+    sess.run(tf.compat.v1.tables_initializer())
     K.set_session(sess)
 
 

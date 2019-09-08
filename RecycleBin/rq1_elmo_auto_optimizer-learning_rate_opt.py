@@ -6,16 +6,12 @@ import tensorflow as tf
 import tensorflow_hub as hub
 
 from keras import backend as K
-from keras.models import Model, Input, load_model
-from keras.layers import Dense, Lambda, Activation, Conv1D, \
-                         MaxPooling1D, Flatten, Reshape
-from keras.optimizers import RMSprop, Adam, Adamax, SGD
-from keras.callbacks import ReduceLROnPlateau, EarlyStopping
+from keras.models import Model, Input
+from keras.layers import Dense, Lambda
 from keras.regularizers import l2
-from keras.layers.merge import add
 from keras.utils import to_categorical
-
-from src.keras_bert import initialize_vars
+from keras.optimizers import RMSprop, Adam, SGD
+from keras.models import load_model
 
 from sklearn.metrics import classification_report
 from sklearn.metrics import f1_score as scikit_f1_score
@@ -25,7 +21,7 @@ from src.callbacks import PlotCurves
 from src.eval_metrics import f1_macro, f1_micro 
 from src.load_data import load_data
 
-sess = tf.compat.v1.Session()
+sess = tf.Session()
 K.set_session(sess)
 
 elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=True)
@@ -33,208 +29,93 @@ elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=True)
 def ELMoEmbedding(x):
     return elmo(tf.squeeze(tf.cast(x, tf.string)), signature="default", as_dict=True)["default"]
 
-################# MODELS ################# 
-
-def build_model_0(n_tags):
+def build_fnn_model_0():
     
     input_text = Input(shape=(1,), dtype="string")
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
-    
-    x = Dense(512, kernel_regularizer=l2(0.001))(embedding)
-    x = Activation('relu')(x)
-    
-    x = Dense(256, kernel_regularizer=l2(0.001))(x)
-    x = Activation('relu')(x)
-    
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    dense = Dense(512, activation='relu')(embedding)
+    dense = Dense(256, activation='relu')(dense)
+    pred = Dense(2, activation='sigmoid')(dense)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_1(n_tags):
+def build_fnn_model_1():
     
     input_text = Input(shape=(1,), dtype="string")
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
-    
-    x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
-    x = Activation('relu')(x)
-    
-    x = Dense(128, kernel_regularizer=l2(0.001))(x)
-    x = Activation('relu')(x)
-    
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    dense = Dense(512, activation='relu')(embedding)
+    dense = Dense(256, activation='relu')(dense)
+    dense = Dense(128, activation='relu')(dense)
+    pred = Dense(2, activation='sigmoid')(dense)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_2(n_tags):
-    
-    def residual(x):
-        x_res = x
-        
-        x = Dense(256, kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
-
-        x = add([x, x_res])
-        return x
+def build_fnn_model_2():
     
     input_text = Input(shape=(1,), dtype="string")
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
-    
-    x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
-    x = Activation('relu')(x)
-    
-    x = residual(x)
-    
-    x = Dense(256, kernel_regularizer=l2(0.001))(x)
-    x = Activation('relu')(x)
-    
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    dense = Dense(256, activation='relu')(embedding)
+    dense = Dense(128, activation='relu')(dense)
+    pred = Dense(2, activation='sigmoid')(dense)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_3(n_tags):
-    
-    def residual(x):
-        x_res = x
-        
-        x = Dense(256, kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
-
-        x = Dense(256, kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
-
-        x = add([x, x_res])
-        return x
+def build_fnn_model_3():
     
     input_text = Input(shape=(1,), dtype="string")
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
-    
-    x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
-    x = Activation('relu')(x)
-    
-    x = residual(x)
-
-    x = Dense(256, kernel_regularizer=l2(0.001))(x)
-    x = Activation('relu')(x)
-    
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    dense = Dense(512, activation='relu')(embedding)
+    dense = Dense(128, activation='relu')(dense)
+    pred = Dense(2, activation='sigmoid')(dense)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_4(n_tags):
-    
-    def residual(x):
-        x_res = x
-        
-        x = Dense(512, kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
-        
-        x = add([x, x_res])
-        return x
+def build_fnn_model_4():
     
     input_text = Input(shape=(1,), dtype="string")
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
-    
-    x = Dense(512, kernel_regularizer=l2(0.001))(embedding)
-    x = Activation('relu')(x)
-    
-    x = residual(x)
-    
-    x = Dense(256, kernel_regularizer=l2(0.001))(x)
-    x = Activation('relu')(x)
-    
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    dense = Dense(512, activation='relu')(embedding)
+    pred = Dense(2, activation='sigmoid')(dense)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_5(n_tags):
+def build_fnn_model_5():
     
     input_text = Input(shape=(1,), dtype="string")
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
-    embedding = Reshape((1024, 1))(embedding)
-    
-    x = Conv1D(64, 5, padding='same', kernel_regularizer=l2(0.001))(embedding)
-    x = Activation('relu')(x)
-    x = MaxPooling1D(5)(x)
-    
-    x = Conv1D(64, 5, padding='same', kernel_regularizer=l2(0.001))(x)
-    x = Activation('relu')(x)
-    x = MaxPooling1D(5)(x)
-    
-    x = Flatten()(x)
-
-    x = Dense(512, kernel_regularizer=l2(0.001))(x)
-    x = Activation('relu')(x)
-    
-    x = Dense(256, kernel_regularizer=l2(0.001))(x)
-    x = Activation('relu')(x)
-    
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    dense = Dense(256, activation='relu')(embedding)
+    pred = Dense(2, activation='sigmoid')(dense)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_6(n_tags):
+def build_fnn_model_6():
     
     input_text = Input(shape=(1,), dtype="string")
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
-    embedding = Reshape((1024, 1))(embedding)
-    
-    x = Conv1D(128, 5, padding='same', kernel_regularizer=l2(0.001))(embedding)
-    x = Activation('relu')(x)
-    x = MaxPooling1D(5)(x)
-    
-    x = Conv1D(128, 5, padding='same', kernel_regularizer=l2(0.001))(x)
-    x = Activation('relu')(x)
-    x = MaxPooling1D(5)(x)
-    
-    x = Flatten()(x)
-
-    x = Dense(512, kernel_regularizer=l2(0.001))(x)
-    x = Activation('relu')(x)
-    
-    x = Dense(256, kernel_regularizer=l2(0.001))(x)
-    x = Activation('relu')(x)
-    
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    dense = Dense(128, activation='relu')(embedding)
+    pred = Dense(2, activation='sigmoid')(dense)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_7(n_tags):
-    
-    def residual(x):
-        x_res = x
-        
-        x = Conv1D(64, 5, padding='same', kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
-        
-        x = Conv1D(64, 5, padding='same', kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
-        
-        x = add([x, x_res])
-        return x
+def build_fnn_model_7():
     
     input_text = Input(shape=(1,), dtype="string")
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
-    embedding = Reshape((1024, 1))(embedding)
-    
-    x = Conv1D(64, 5, padding='same', kernel_regularizer=l2(0.001))(embedding)
-    x = Activation('relu')(x)
-    x = MaxPooling1D(5)(x)
-    
-    x = residual(x)
-    x = MaxPooling1D(5)(x)
-    
-    x = Flatten()(x)
-
-    x = Dense(256, kernel_regularizer=l2(0.001))(x)
-    x = Activation('relu')(x)
-    
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    dense = Dense(512, activation='relu', kernel_regularizer=l2(0.001))(embedding)
+    dense = Dense(256, activation='relu', kernel_regularizer=l2(0.001))(dense)
+    pred = Dense(2, activation='sigmoid')(dense)
 
     return Model(inputs=[input_text], outputs=pred)
 
+def build_fnn_model_8():
+    
+    input_text = Input(shape=(1,), dtype="string")
+    embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
+    dense = Dense(256, activation='relu', kernel_regularizer=l2(0.001))(embedding)
+    dense = Dense(128, activation='relu', kernel_regularizer=l2(0.001))(dense)
+    pred = Dense(2, activation='sigmoid')(dense)
 
-################# UTILS #################
-
+    return Model(inputs=[input_text], outputs=pred)
 
 def get_input(data_, n_tags, is_test=False):
     
@@ -251,7 +132,7 @@ def get_input(data_, n_tags, is_test=False):
     
     return X, y
 
-def get_scores(model, data_, batch_size, n_tags, results_file, print_out=False):
+def get_scores(model, data_, batch_size, n_tags, results_file):
     
     X, y = get_input(data_, n_tags, True)
     
@@ -260,10 +141,6 @@ def get_scores(model, data_, batch_size, n_tags, results_file, print_out=False):
     
     clsrpt = classification_report(y, y_preds)
     sfm = scikit_f1_score(y, y_preds, average='macro')
-    
-    if print_out:
-        print(clsrpt)
-        print('\nScikit_F1_Macro:', sfm)
 
     if results_file:
         with open(results_file, 'a') as f:
@@ -271,53 +148,43 @@ def get_scores(model, data_, batch_size, n_tags, results_file, print_out=False):
             
     return sfm
 
-################# MAIN #################
-
 if __name__ == '__main__':
-    
-    #### INIT PARAMS ####
-    
-    n_tags = 2
-    batch_size = 32
 
     build_models_functions = {
-        'model_0': build_model_0(n_tags),
-        'model_1': build_model_1(n_tags), 
-        'model_2': build_model_2(n_tags),
-        'model_3': build_model_3(n_tags), 
-        'model_4': build_model_4(n_tags), 
-        'model_5': build_model_5(n_tags),
-        'model_6': build_model_6(n_tags),
-        'model_7': build_model_7(n_tags),
+        'fnn_model_0': build_fnn_model_0(),
+        'fnn_model_1': build_fnn_model_1(), 
+        'fnn_model_2': build_fnn_model_2(),
+        'fnn_model_3': build_fnn_model_3(), 
+        'fnn_model_4': build_fnn_model_4(), 
+        'fnn_model_5': build_fnn_model_5(),
+        'fnn_model_6': build_fnn_model_6(),
+        'fnn_model_7': build_fnn_model_7(),
+        'fnn_model_8': build_fnn_model_8(),
     }
 
     optimizer_configs = [
         {'name': 'adam',
-         'lro': [0.01, 0.001]},
-        {'name': 'adamax',
-         'lro': [0.01, 0.001]},
+         'lro': [0.005, 0.001, 0.0005, 0.0001]}, # learning rate options
         {'name': 'rmsprop',
-         'lro': [0.01, 0.001]},
+         'lro': [0.005, 0.001, 0.0005, 0.0001]},
         {'name': 'sgd',
-         'lro': [0.1, 0.01]},
+         'lro': [0.05, 0.01, 0.001, 0.005]},
     ]
     
-    #### LOAD DATA #### 
+    n_tags = 2
+    batch_size = 32
     
     train_data, valid_data, test_data, _ = load_data()
     
 #     Limit for testing the pipeline
-#     train_data = train_data[:1]
-#     valid_data = valid_data[:1]
-#     test_data = test_data[:1]
+#     train_data = train_data[:10]
+#     valid_data = valid_data[:10]
+#     test_data = test_data[:10]
     
     X_tra, y_tra = get_input(train_data, n_tags, False)
     X_val, y_val = get_input(valid_data, n_tags, False)
     
     del train_data
-    
-    model = None
-    optimizer = None
        
     loss = 'binary_crossentropy'
     metrics = ['acc', f1_macro, f1_micro]
@@ -326,7 +193,9 @@ if __name__ == '__main__':
         
         print("\n----------------------------------\n")
         print("Starting model:", fname)
-
+        
+        model = func
+        
         for opco in optimizer_configs:
             
             optimizer_name = opco['name']
@@ -336,25 +205,15 @@ if __name__ == '__main__':
             for lr in opco['lro']:
                 
                 print("Learning rate:", str(lr))
-                
-                if optimizer:
-                    del optimizer
             
                 if optimizer_name == 'adam':
                     optimizer = Adam(lr=lr)
-                    
-                if optimizer_name == 'adamax':
-                    optimizer = Adamax(lr=lr)
                     
                 elif optimizer_name == 'rmsprop':
                     optimizer = RMSprop(lr=lr)
                     
                 elif optimizer_name == 'sgd':
                     optimizer = SGD(lr=lr)
-                    
-                if model:
-                    del model
-                model = func
     
                 model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
@@ -362,28 +221,21 @@ if __name__ == '__main__':
                              '_' + fname + \
                              '_' + optimizer_name +  \
                              '_lr_' + str(lr) +  \
-                             '_lrreduction' + \
                              '_loss_' + loss
-            
+
                 model_main = './Model/' + model_name.split('model')[0] + 'model/'
                 model_dir = os.path.join(model_main, model_name)
                 score_file = os.path.join(model_main, 'model_performances.csv')
                 results_file = os.path.join(model_dir, 'model_results_file.txt')
                 
                 print("Fitting the model...")
-                
-                # Instantiate variables
-                initialize_vars(sess)
 
                 model.fit(X_tra, y_tra, 
-                          epochs=50,
+                          epochs=15, 
                           batch_size=batch_size, 
                           validation_data=(X_val, y_val), 
                           callbacks=[
-                              PlotCurves(model_name=model_name, model_dir=model_dir, plt_show=False, jnote=False),
-                              ReduceLROnPlateau(monitor='val_f1_macro', patience=3,
-                                                factor=0.1, min_lr=0.00001),
-                              EarlyStopping(monitor='val_f1_macro', min_delta=0, patience=10, mode='max')
+                              PlotCurves(model_name=model_name, model_dir=model_dir, save=False)
                           ])
                 
                 best_model = load_model(os.path.join(model_dir, model_name + '_best_f1_macro_model.h5'), 
@@ -404,7 +256,7 @@ if __name__ == '__main__':
                 
                 if not os.path.exists(score_file):
                     with open(score_file, 'w') as scrf:
-                        scrf.write("model_name,val_f1_macro,test_f1_macro\n")
+                        scrf.write("model_name,val_f1_macro,test_f1_macro")
                 
                 with open(score_file, 'a') as scrf:
                     scrf.write(
