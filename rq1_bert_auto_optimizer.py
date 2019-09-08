@@ -5,8 +5,9 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, Lambda, Activation, Conv1D, \
-                                    MaxPooling1D, Flatten, Reshape, add
-from tensorflow.keras.optimizers import RMSprop, Adam, Adamax, SGD
+                                    MaxPooling1D, Flatten, Reshape, \
+                                    BatchNormalization, Dropout, add
+from tensorflow.keras.optimizers import RMSprop, Adam, Adamax
 from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
 from tensorflow.keras.regularizers import l2
 
@@ -188,7 +189,6 @@ def build_model_6(max_seq_length, n_fine_tune_layers=3,
 
     x = Conv1D(64, 5, padding='same')(bert_output)
     x = Activation('relu')(x)
-    x = MaxPooling1D(5)(x)
 
     x = residual(x)
     x = MaxPooling1D(5)(x)
@@ -272,43 +272,6 @@ def build_model_8(max_seq_length, n_fine_tune_layers=3,
 
     return Model(inputs=bert_inputs, outputs=pred)
 
-def build_model_9(max_seq_length, n_fine_tune_layers=3,
-                  bert_path="https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1"):
-
-    def residual(x):
-        x_res = x
-
-        x = Conv1D(64, 5, padding='same', kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
-
-        x = add([x, x_res])
-        return x
-
-    bert_inputs = [Input(shape=(max_seq_length,), name="input_ids"),
-                   Input(shape=(max_seq_length,), name="input_masks"),
-                   Input(shape=(max_seq_length,), name="segment_ids")]
-
-    bert_output = BertLayer(n_fine_tune_layers=n_fine_tune_layers,
-                            pooling='mean', bert_path=bert_path)(bert_inputs)
-    bert_output = Reshape((768, 1))(bert_output)
-
-    x = Conv1D(64, 5, padding='same')(bert_output)
-    x = Activation('relu')(x)
-    x = MaxPooling1D(5)(x)
-
-    x = residual(x)
-    x = MaxPooling1D(5)(x)
-    x = Dropout(0.25)(x)
-
-    x = Flatten()(x)
-
-    x = Dense(256)(x)
-    x = Activation('relu')(x)
-
-    pred = Dense(1, activation='sigmoid')(x)
-
-    return Model(inputs=bert_inputs, outputs=pred)
-
 ################# UTILS #################
 
 
@@ -378,7 +341,6 @@ if __name__ == '__main__':
         'model_6_tunedlayers_3': build_model_6(max_seq_length, n_fine_tune_layers=3),
         'model_7_tunedlayers_3': build_model_7(max_seq_length, n_fine_tune_layers=3),
         'model_8_tunedlayers_3': build_model_8(max_seq_length, n_fine_tune_layers=3),
-        'model_9_tunedlayers_3': build_model_9(max_seq_length, n_fine_tune_layers=3),
     }
 
     optimizer_configs = [
@@ -388,8 +350,6 @@ if __name__ == '__main__':
          'lro': [0.001, 0.0001, 2e-5, 4e-5]},
         {'name': 'rmsprop',
          'lro': [0.001, 0.0001, 2e-5, 4e-5]},
-        {'name': 'sgd',
-         'lro': [0.01, 0.001, 2e-5, 4e-5]},
     ]
 
     epoch_options = [1, 2, 3]
@@ -437,14 +397,11 @@ if __name__ == '__main__':
                     if optimizer_name == 'adam':
                         optimizer = Adam(lr=lr)
 
-                    if optimizer_name == 'adamax':
+                    elif optimizer_name == 'adamax':
                         optimizer = Adamax(lr=lr)
 
                     elif optimizer_name == 'rmsprop':
                         optimizer = RMSprop(lr=lr)
-
-                    elif optimizer_name == 'sgd':
-                        optimizer = SGD(lr=lr)
 
                     if model:
                         del model
