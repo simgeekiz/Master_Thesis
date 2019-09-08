@@ -15,6 +15,8 @@ from keras.regularizers import l2
 from keras.layers.merge import add
 from keras.utils import to_categorical
 
+from src.keras_bert import initialize_vars
+
 from sklearn.metrics import classification_report
 from sklearn.metrics import f1_score as scikit_f1_score
 
@@ -23,7 +25,7 @@ from src.callbacks import PlotCurves
 from src.eval_metrics import f1_macro, f1_micro 
 from src.load_data import load_data
 
-sess = tf.Session()
+sess = tf.compat.v1.Session()
 K.set_session(sess)
 
 elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=True)
@@ -273,6 +275,8 @@ def get_scores(model, data_, batch_size, n_tags, results_file, print_out=False):
 
 if __name__ == '__main__':
     
+    #### INIT PARAMS ####
+    
     n_tags = 2
     batch_size = 32
 
@@ -298,6 +302,8 @@ if __name__ == '__main__':
          'lro': [0.1, 0.01]},
     ]
     
+    #### LOAD DATA #### 
+    
     train_data, valid_data, test_data, _ = load_data()
     
 #     Limit for testing the pipeline
@@ -309,6 +315,9 @@ if __name__ == '__main__':
     X_val, y_val = get_input(valid_data, n_tags, False)
     
     del train_data
+    
+    model = None
+    optimizer = None
        
     loss = 'binary_crossentropy'
     metrics = ['acc', f1_macro, f1_micro]
@@ -317,9 +326,7 @@ if __name__ == '__main__':
         
         print("\n----------------------------------\n")
         print("Starting model:", fname)
-        
-        model = func
-        
+
         for opco in optimizer_configs:
             
             optimizer_name = opco['name']
@@ -329,6 +336,9 @@ if __name__ == '__main__':
             for lr in opco['lro']:
                 
                 print("Learning rate:", str(lr))
+                
+                if optimizer:
+                    del optimizer
             
                 if optimizer_name == 'adam':
                     optimizer = Adam(lr=lr)
@@ -341,16 +351,19 @@ if __name__ == '__main__':
                     
                 elif optimizer_name == 'sgd':
                     optimizer = SGD(lr=lr)
+                    
+                if model:
+                    del model
+                model = func
     
                 model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
                 model_name = 'Optimized_RQ1_elmo' + \
                              '_' + fname + \
-                             '_' + optimizer_str +  \
+                             '_' + optimizer_name +  \
                              '_lr_' + str(lr) +  \
                              '_lrreduction' + \
                              '_loss_' + loss
-
             
                 model_main = './Model/' + model_name.split('model')[0] + 'model/'
                 model_dir = os.path.join(model_main, model_name)
@@ -358,6 +371,9 @@ if __name__ == '__main__':
                 results_file = os.path.join(model_dir, 'model_results_file.txt')
                 
                 print("Fitting the model...")
+                
+                # Instantiate variables
+                initialize_vars(sess)
 
                 model.fit(X_tra, y_tra, 
                           epochs=50,
@@ -365,7 +381,7 @@ if __name__ == '__main__':
                           validation_data=(X_val, y_val), 
                           callbacks=[
                               PlotCurves(model_name=model_name, model_dir=model_dir, plt_show=False, jnote=False),
-                              ReduceLROnPlateau(monitor='val_f1_macro', patience=5, 
+                              ReduceLROnPlateau(monitor='val_f1_macro', patience=3,
                                                 factor=0.1, min_lr=0.00001),
                               EarlyStopping(monitor='val_f1_macro', min_delta=0, patience=10, mode='max')
                           ])

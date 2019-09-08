@@ -5,6 +5,7 @@ from IPython import display
 
 from keras.callbacks import Callback as KerasCallback
 from tensorflow.keras.callbacks import Callback as TensorflowCallback
+from tensorflow.keras.models import save_model
 
 class PlotCurves(KerasCallback):
 
@@ -191,7 +192,8 @@ class PlotCurvesTF(TensorflowCallback):
 
         if self.save_epochs:
             # Save at each epoch
-            self.model.save(os.path.join(self.model_dir, self.model_name + '_epoch_' + str(self.epoch) + '.h5'))
+            save_model(self.model, os.path.join(self.model_dir, self.model_name + '_epoch_' + str(self.epoch) + '.h5'),
+                       overwrite=True, include_optimizer=True, save_format='h5')
         
         # (Possibly) update best validation accuracy
         if self.val_acc[-1] > self.best_val_acc:
@@ -202,7 +204,8 @@ class PlotCurvesTF(TensorflowCallback):
         if self.val_f1_macro[-1] > self.best_val_f1_macro:
             self.best_val_f1_macro = self.val_f1_macro[-1]
             self.best_f1_macro_epoch = self.epoch
-            self.model.save(os.path.join(self.model_dir, self.model_name + '_best_f1_macro_model.h5'))
+            save_model(self.model, os.path.join(self.model_dir, self.model_name + '_best_f1_macro_model.h5'),
+                       overwrite=True, include_optimizer=True, save_format='h5')
             
         # (Possibly) update best validation F1-micro
         if self.val_f1_micro[-1] > self.best_val_f1_micro:
