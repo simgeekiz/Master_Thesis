@@ -1,5 +1,4 @@
 import os
-import time
 import matplotlib.pyplot as plt
 from IPython import display
 
@@ -14,43 +13,42 @@ class PlotCurves(KerasCallback):
         self.save_epochs = save_epochs
         self.plt_show = plt_show
         self.jnote = jnote
-        
+
         if model_dir:
             self.model_dir = model_dir
         else:
             self.model_dir = './Model/' + self.model_name.split('model')[0] + 'model/' + self.model_name
         os.makedirs(self.model_dir, exist_ok=True)
         self.meta_file = os.path.join(self.model_dir, 'model_metadata.txt')
-        
+
         with open(self.meta_file, 'w') as f:
             f.write('\n----------------\n')
-        
+
     def on_train_begin(self, logs={}):
         self.epoch = 0
-        
+
         self.best_acc_epoch = 0
         self.best_f1_macro_epoch = 0
         self.best_f1_micro_epoch = 0
-        
+
         self.x = []
         self.losses = []
-        
+
         self.acc = []
         self.f1_macro = []
         self.f1_micro = []
-        
+
         self.val_losses = []
         self.val_acc = []
         self.val_f1_macro = []
         self.val_f1_micro = []
-        
+
         self.best_val_acc = 0
         self.best_val_f1_macro = 0
         self.best_val_f1_micro = 0
 
-        self.fig = plt.figure(figsize=(10, 5))
         self.logs = []
-        
+
         with open(self.meta_file, 'a') as f:
             self.model.summary(print_fn=lambda x: f.write(x + '\n'))
             f.write('\n')
@@ -61,23 +59,23 @@ class PlotCurves(KerasCallback):
         self.logs.append(logs)
         self.x.append(self.epoch)
         self.losses.append(logs.get('loss'))
-        
+
         self.acc.append(logs.get('acc'))
         self.f1_macro.append(logs.get('f1_macro'))
         self.f1_micro.append(logs.get('f1_micro'))
-        
+
         self.val_losses.append(logs.get('val_loss'))
-        
+
         self.val_acc.append(logs.get('val_acc'))
         self.val_f1_macro.append(logs.get('val_f1_macro'))
         self.val_f1_micro.append(logs.get('val_f1_micro'))
-        
+
         self.epoch += 1
 
         if self.save_epochs:
             # Save at each epoch
             self.model.save(os.path.join(self.model_dir, self.model_name + '_epoch_' + str(self.epoch) + '.h5'))
-        
+
         # (Possibly) update best validation accuracy
         if self.val_acc[-1] > self.best_val_acc:
             self.best_val_acc = self.val_acc[-1]
@@ -88,17 +86,19 @@ class PlotCurves(KerasCallback):
             self.best_val_f1_macro = self.val_f1_macro[-1]
             self.best_f1_macro_epoch = self.epoch
             self.model.save(os.path.join(self.model_dir, self.model_name + '_best_f1_macro_model.h5'))
-            
+
         # (Possibly) update best validation F1-micro
         if self.val_f1_micro[-1] > self.best_val_f1_micro:
             self.best_val_f1_micro = self.val_f1_micro[-1]
             self.best_f1_micro_epoch = self.epoch
-            
+
         with open(self.meta_file, 'a') as f:
-            f.write(str(self.epoch) 
-                    + ' => val_f1_macro: ' + str(self.val_f1_macro[-1]) 
-                    + ' | val_f1_micro: ' + str(self.val_f1_micro[-1]) 
-                    + ' | val_acc: ' + str(self.val_acc[-1]))
+            f.write('epoch ' + str(self.epoch) + \
+                    ' => loss: ' + str(self.losses[-1]) + \
+                    ' | val_loss: ' + str(self.val_losses[-1]) + \
+                    ' | val_f1_macro: ' + str(self.val_f1_macro[-1]) + \
+                    ' | val_f1_micro: ' + str(self.val_f1_micro[-1]) + \
+                    ' | val_acc: ' + str(self.val_acc[-1]))
             f.write('\n')
 
         if self.jnote:
@@ -130,43 +130,42 @@ class PlotCurvesTF(TensorflowCallback):
         self.save_epochs = save_epochs
         self.plt_show = plt_show
         self.jnote = jnote
-        
+
         if model_dir:
             self.model_dir = model_dir
         else:
             self.model_dir = './Model/' + self.model_name.split('model')[0] + 'model/' + self.model_name
         os.makedirs(self.model_dir, exist_ok=True)
         self.meta_file = os.path.join(self.model_dir, 'model_metadata.txt')
-        
+
         with open(self.meta_file, 'w') as f:
             f.write('\n----------------\n')
-        
+
     def on_train_begin(self, logs={}):
         self.epoch = 0
-        
+
         self.best_acc_epoch = 0
         self.best_f1_macro_epoch = 0
         self.best_f1_micro_epoch = 0
-        
+
         self.x = []
         self.losses = []
-        
+
         self.acc = []
         self.f1_macro = []
         self.f1_micro = []
-        
+
         self.val_losses = []
         self.val_acc = []
         self.val_f1_macro = []
         self.val_f1_micro = []
-        
+
         self.best_val_acc = 0
         self.best_val_f1_macro = 0
         self.best_val_f1_micro = 0
 
-        self.fig = plt.figure(figsize=(10, 5))
         self.logs = []
-        
+
         with open(self.meta_file, 'a') as f:
             self.model.summary(print_fn=lambda x: f.write(x + '\n'))
             f.write('\n')
@@ -177,24 +176,24 @@ class PlotCurvesTF(TensorflowCallback):
         self.logs.append(logs)
         self.x.append(self.epoch)
         self.losses.append(logs.get('loss'))
-        
+
         self.acc.append(logs.get('acc'))
         self.f1_macro.append(logs.get('f1_macro'))
         self.f1_micro.append(logs.get('f1_micro'))
-        
+
         self.val_losses.append(logs.get('val_loss'))
-        
+
         self.val_acc.append(logs.get('val_acc'))
         self.val_f1_macro.append(logs.get('val_f1_macro'))
         self.val_f1_micro.append(logs.get('val_f1_micro'))
-        
+
         self.epoch += 1
 
         if self.save_epochs:
             # Save at each epoch
             save_model(self.model, os.path.join(self.model_dir, self.model_name + '_epoch_' + str(self.epoch) + '.h5'),
                        overwrite=True, include_optimizer=True, save_format='h5')
-        
+
         # (Possibly) update best validation accuracy
         if self.val_acc[-1] > self.best_val_acc:
             self.best_val_acc = self.val_acc[-1]
@@ -206,17 +205,19 @@ class PlotCurvesTF(TensorflowCallback):
             self.best_f1_macro_epoch = self.epoch
             save_model(self.model, os.path.join(self.model_dir, self.model_name + '_best_f1_macro_model.h5'),
                        overwrite=True, include_optimizer=True, save_format='h5')
-            
+
         # (Possibly) update best validation F1-micro
         if self.val_f1_micro[-1] > self.best_val_f1_micro:
             self.best_val_f1_micro = self.val_f1_micro[-1]
             self.best_f1_micro_epoch = self.epoch
-            
+
         with open(self.meta_file, 'a') as f:
-            f.write(str(self.epoch) 
-                    + ' => val_f1_macro: ' + str(self.val_f1_macro[-1]) 
-                    + ' | val_f1_micro: ' + str(self.val_f1_micro[-1]) 
-                    + ' | val_acc: ' + str(self.val_acc[-1]))
+            f.write('epoch ' + str(self.epoch) + \
+                    ' => loss: ' + str(self.losses[-1]) + \
+                    ' | val_loss: ' + str(self.val_losses[-1]) + \
+                    ' | val_f1_macro: ' + str(self.val_f1_macro[-1]) + \
+                    ' | val_f1_micro: ' + str(self.val_f1_micro[-1]) + \
+                    ' | val_acc: ' + str(self.val_acc[-1]))
             f.write('\n')
 
         if self.jnote:
