@@ -1,0 +1,19 @@
+
+-----------------------------------
+Decision Tree
+
+Best Score
+0.36190476190476195
+Best Params
+{'min_samples_leaf': 3, 'max_features': None, 'max_depth': None, 'min_samples_split': 50}
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.52      1.00      0.69        12
+           1       0.00      0.00      0.00        11
+
+   micro avg       0.52      0.52      0.52        23
+   macro avg       0.26      0.50      0.34        23
+weighted avg       0.27      0.52      0.36        23
+
+Scikit_F1_Macro: 0.3428571428571428
