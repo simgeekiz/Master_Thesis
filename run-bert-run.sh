@@ -1,0 +1,10 @@
+
+python rq1_bert_auto_optimizer_adam_lr_0_001.py
+python rq1_bert_auto_optimizer_adam_lr_0_0001.py
+python rq1_bert_auto_optimizer_adam_lr_2e_5.py
+# python rq1_bert_auto_optimizer_adamax_lr_0_001.py
+# python rq1_bert_auto_optimizer_adamax_lr_0_0001.py
+# python rq1_bert_auto_optimizer_adamax_lr_2e_5.py
+python rq1_bert_auto_optimizer_rmsprop_lr_0_001.py
+python rq1_bert_auto_optimizer_rmsprop_lr_0_0001.py
+python rq1_bert_auto_optimizer_rmsprop_lr_2e_5.py

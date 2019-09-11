@@ -345,14 +345,14 @@ if __name__ == '__main__':
 
     optimizer_configs = [
         {'name': 'adam',
-         'lro': [0.001, 0.0001, 2e-5, 4e-5]},
+         'lro': [0.001, 0.0001, 2e-5]},
         {'name': 'adamax',
-         'lro': [0.001, 0.0001, 2e-5, 4e-5]},
+         'lro': [0.001, 0.0001, 2e-5]},
         {'name': 'rmsprop',
-         'lro': [0.001, 0.0001, 2e-5, 4e-5]},
+         'lro': [0.001, 0.0001, 2e-5]},
     ]
 
-    epoch_options = [1, 2, 3]
+    epoch_options = [1, 2]
 
     #### LOAD DATA ####
 

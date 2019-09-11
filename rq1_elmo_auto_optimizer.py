@@ -261,7 +261,7 @@ def build_model_9(n_tags):
     x = Dropout(0.5)(x)
 
     x = Dense(128, kernel_regularizer=l2(0.001))(x)
-    x = BatchNormalization(x)
+    x = BatchNormalization()(x)
     x = Activation('relu')(x)
 
     pred = Dense(n_tags, activation='sigmoid')(x)
@@ -359,6 +359,38 @@ def build_model_12(n_tags):
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
 
+    pred = Dense(n_tags, activation='sigmoid')(x)
+
+    return Model(inputs=[input_text], outputs=pred)
+
+def build_model_13(n_tags):
+
+    def residual(x):
+        x_res = x
+
+        x = Dense(256, kernel_regularizer=l2(0.001))(x)
+        x = Activation('relu')(x)
+        x = BatchNormalization()(x)
+
+        x = Dense(256, kernel_regularizer=l2(0.001))(x)
+        x = Activation('relu')(x)
+        x = BatchNormalization()(x)
+
+        x = add([x, x_res])
+        return x
+
+    input_text = Input(shape=(1,), dtype="string")
+    embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
+
+    x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
+    x = Activation('relu')(x)
+
+    x = residual(x)
+
+    x = Dense(256, kernel_regularizer=l2(0.001))(x)
+    x = Activation('relu')(x)
+    x = BatchNormalization()(x)
+    
     pred = Dense(n_tags, activation='sigmoid')(x)
 
     return Model(inputs=[input_text], outputs=pred)
