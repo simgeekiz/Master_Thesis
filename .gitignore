@@ -15,6 +15,7 @@ Models/
 bert/
 MODEL/
 MODELS/
+Shared_Task/
 *backup*/
 *back_up*/
 *.pickle

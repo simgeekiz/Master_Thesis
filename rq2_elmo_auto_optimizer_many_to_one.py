@@ -45,119 +45,128 @@ def ELMoEmbeddingStack(x):
         embeds.append(elmo(tf.squeeze(tf.cast(art, tf.string)), signature="default", as_dict=True)["default"])
     return tf.stack(embeds, 1)
 
+
 ################# MODELS #################
 
-def build_model_0(max_len, n_tags):
+def build_model_0(ww, n_tags):
     
-    input_text = Input(shape=(max_len,), dtype="string")
+    inp_size = 2*ww+1
+    input_text = Input(shape=(inp_size,), dtype="string")
     
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, max_len, 1024))(input_text)
+    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
     x = Bidirectional(CuDNNLSTM(units=256, return_sequences=True))(embedding)
                       
-    pred = TimeDistributed(Dense(n_tags, activation="sigmoid"))(x)
+    pred = LSTM(n_tags, activation="sigmoid")(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_1(max_len, n_tags):
+def build_model_1(ww, n_tags):
     
-    input_text = Input(shape=(max_len,), dtype="string")
+    inp_size = 2*ww+1
+    input_text = Input(shape=(inp_size,), dtype="string")
     
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, max_len, 1024))(input_text)
+    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
     x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(embedding)
 
-    pred = TimeDistributed(Dense(n_tags, activation="sigmoid"))(x)
+    pred = LSTM(n_tags, activation="sigmoid")(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_2(max_len, n_tags):
+def build_model_2(ww, n_tags):
     
-    input_text = Input(shape=(max_len,), dtype="string")
+    inp_size = 2*ww+1
+    input_text = Input(shape=(inp_size,), dtype="string")
     
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, max_len, 1024))(input_text)
+    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
     x = Bidirectional(CuDNNLSTM(units=256, return_sequences=True))(embedding)
     x = Dropout(0.2)(x)
                       
-    pred = TimeDistributed(Dense(n_tags, activation="sigmoid"))(x)
+    pred = LSTM(n_tags, activation="sigmoid")(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_3(max_len, n_tags):
+def build_model_3(ww, n_tags):
     
-    input_text = Input(shape=(max_len,), dtype="string")
+    inp_size = 2*ww+1
+    input_text = Input(shape=(inp_size,), dtype="string")
     
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, max_len, 1024))(input_text)
+    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
     x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
     x = Activation('relu')(x)
     
     x = Bidirectional(LSTM(units=128, return_sequences=True))(x)
 
-    pred = TimeDistributed(Dense(n_tags, activation="sigmoid"))(x)
+    pred = LSTM(n_tags, activation="sigmoid")(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_4(max_len, n_tags):
+def build_model_4(ww, n_tags):
     
-    input_text = Input(shape=(max_len,), dtype="string")
-    
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, max_len, 1024))(input_text)
+    inp_size = 2*ww+1
+    input_text = Input(shape=(inp_size,), dtype="string")
+
+    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
     x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
     x = Activation('relu')(x)
     
     x = Bidirectional(LSTM(units=128, return_sequences=True, recurrent_dropout=0.2, dropout=0.2))(x)
 
-    pred = TimeDistributed(Dense(n_tags, activation="sigmoid"))(x)
+    pred = LSTM(n_tags, activation="sigmoid")(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_5(max_len, n_tags):
+def build_model_5(ww, n_tags):
     
-    input_text = Input(shape=(max_len,), dtype="string")
-    
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, max_len, 1024))(input_text)
+    inp_size = 2*ww+1
+    input_text = Input(shape=(inp_size,), dtype="string")
+
+    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
     x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(embedding)
     x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(x)
     x = Dropout(0.4)(x)
     
-    pred = TimeDistributed(Dense(n_tags, activation="sigmoid"))(x)
+    pred = LSTM(n_tags, activation="sigmoid")(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
 
-def build_model_6(max_len, n_tags):
+def build_model_6(ww, n_tags):
     
-    input_text = Input(shape=(max_len,), dtype="string")
-    
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, max_len, 1024))(input_text)
+    inp_size = 2*ww+1
+    input_text = Input(shape=(inp_size,), dtype="string")
+
+    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
     x = Bidirectional(CuDNNLSTM(units=256, return_sequences=True))(embedding)
     x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(x)
     x = Dropout(0.4)(x)
     
-    pred = TimeDistributed(Dense(n_tags, activation="sigmoid"))(x)
+    pred = LSTM(n_tags, activation="sigmoid")(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_7(max_len, n_tags):
+def build_model_7(ww, n_tags):
     
-    input_text = Input(shape=(max_len,), dtype="string")
-    
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, max_len, 1024))(input_text)
+    inp_size = 2*ww+1
+    input_text = Input(shape=(inp_size,), dtype="string")
+
+    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
     x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(embedding)
     x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(x)
     
-    pred = TimeDistributed(Dense(n_tags, activation="sigmoid"))(x)
+    pred = LSTM(n_tags, activation="sigmoid")(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_8(max_len, n_tags):
+def build_model_8(ww, n_tags):
     
     def residual(x):
         x_res = x
@@ -166,18 +175,20 @@ def build_model_8(max_len, n_tags):
         x = add([x, x_res])
         return x
     
-    input_text = Input(shape=(max_len,), dtype="string")
-    
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, max_len, 1024))(input_text)
+    inp_size = 2*ww+1
+    input_text = Input(shape=(inp_size,), dtype="string")
+
+    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
     x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(embedding)
     x = residual(x)
 
-    pred = TimeDistributed(Dense(n_tags, activation="sigmoid"))(x)
+    pred = LSTM(n_tags, activation="sigmoid")(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_9(max_len, n_tags):
+
+def build_model_9(ww, n_tags):
     
     def residual(x):
         x_res = x
@@ -186,17 +197,18 @@ def build_model_9(max_len, n_tags):
         x = add([x, x_res])
         return x
     
-    input_text = Input(shape=(max_len,), dtype="string")
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, max_len, 1024))(input_text)
+    inp_size = 2*ww+1
+    input_text = Input(shape=(inp_size,), dtype="string")
+    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
     x = Bidirectional(CuDNNLSTM(units=256, return_sequences=True))(embedding)
     x = residual(x)
 
-    pred = TimeDistributed(Dense(n_tags, activation="sigmoid"))(x)
+    pred = LSTM(n_tags, activation="sigmoid")(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_10(max_len, n_tags):
+def build_model_10(ww, n_tags):
     
     def residual(x):
         x_res = x
@@ -205,19 +217,21 @@ def build_model_10(max_len, n_tags):
         x = add([x, x_res])
         return x
     
-    input_text = Input(shape=(max_len,), dtype="string")
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, max_len, 1024))(input_text)
+    inp_size = 2*ww+1
+    input_text = Input(shape=(inp_size,), dtype="string")
+    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
     x = Bidirectional(CuDNNLSTM(units=256, return_sequences=True))(embedding)
     x = residual(x)
     x = Dropout(0.4)(x)
 
-    pred = TimeDistributed(Dense(n_tags, activation="sigmoid"))(x)
+    pred = LSTM(n_tags, activation="sigmoid")(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_11(max_len, n_tags):
+
+def build_model_11(ww, n_tags):
     
     def residual(x):
         x_res = x
@@ -226,9 +240,10 @@ def build_model_11(max_len, n_tags):
         x = add([x, x_res])
         return x
     
-    input_text = Input(shape=(max_len,), dtype="string")
+    inp_size = 2*ww+1
+    input_text = Input(shape=(inp_size,), dtype="string")
 
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, max_len, 1024))(input_text)
+    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
     x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
     x = Activation('relu')(x)
@@ -236,13 +251,11 @@ def build_model_11(max_len, n_tags):
     x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(embedding)
     x = residual(x)
 
-    pred = TimeDistributed(Dense(n_tags, activation="sigmoid"))(x)
+    pred = LSTM(n_tags, activation="sigmoid")(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-
-
-def build_model_12(max_len, n_tags):
+def build_model_12(ww, n_tags):
     
     def residual(x):
         x_res = x
@@ -251,8 +264,10 @@ def build_model_12(max_len, n_tags):
         x = add([x, x_res])
         return x
 
-    input_text = Input(shape=(max_len,), dtype="string")
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, max_len, 1024))(input_text)
+    inp_size = 2*ww+1
+    input_text = Input(shape=(inp_size,), dtype="string")
+
+    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
     x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
     x = Activation('relu')(x)
@@ -260,11 +275,11 @@ def build_model_12(max_len, n_tags):
     x = Bidirectional(CuDNNLSTM(units=256, return_sequences=True))(x)
     x = residual(x)
 
-    pred = TimeDistributed(Dense(n_tags, activation="sigmoid"))(x)
+    pred = LSTM(n_tags, activation="sigmoid")(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_13(max_len, n_tags):
+def build_model_13(ww, n_tags):
     
     def residual(x):
         x_res = x
@@ -275,80 +290,89 @@ def build_model_13(max_len, n_tags):
         x = add([x, x_res])
         return x
     
-    input_text = Input(shape=(max_len,), dtype="string")
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, max_len, 1024))(input_text)
-    
+    inp_size = 2*ww+1
+    input_text = Input(shape=(inp_size,), dtype="string")
+    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)    
     x = Dense(256, activation='relu')(embedding)
     x = Bidirectional(LSTM(units=128, return_sequences=True,
                            recurrent_dropout=0.2, dropout=0.2))(x)
 
     x = residual(x)
 
-    pred = TimeDistributed(Dense(n_tags, activation="sigmoid"))(x)
+    pred = LSTM(n_tags, activation="sigmoid")(x)
     
     return Model(inputs=[input_text], outputs=pred)
 
 ################# UTILS #################
 
 
-def get_input(data_, max_len, n_tags, batch_size, is_test=False, limit=None):
+def get_input(data_, ww, n_tags, batch_size, is_test=False, limit=None):
     
     def normalize(text):
         return text.replace('\n', '').strip()
     
+    padding_sent = {
+        'sentence': 'ENDPAD',
+        'label': 0
+    }
+
+    X = []
+    y = []
+
+    for article in data_:
+        sent_objs = article['sentences']
+        
+        for si, sentence in enumerate(sent_objs):
+            sequence = []
+
+            # Prev
+            for i in reversed(range(ww)):
+                sequence.append(normalize(sent_objs[si-i-1]['sentence']) 
+                                if si-i-1 >= 0 
+                                else padding_sent['sentence'])
+
+            # Curr
+            sequence.append(normalize(sent_objs[si]['sentence']))
+
+            # Next
+            for i in range(ww):
+                sequence.append(normalize(sent_objs[si+i+1]['sentence'] )
+                                if si+i+1 < len(article['sentences']) 
+                                else padding_sent['sentence'])
+
+            X.append(sequence)
+            y.append(sent_objs[si]['label']
+                     if is_test 
+                     else to_categorical(sent_objs[si]['label'], num_classes=n_tags))
+            
     # limit data if not an even number when batch_size=2
     if not limit:
-        limit = len(data_) if len(data_)%batch_size == 0 else len(data_)-len(data_)%batch_size
-
-    data_ = data_[:limit]
-    
-    X = []
-    for article in data_:
-        new_seq = []
-        for i in range(max_len):
-            try:
-                new_seq.append(normalize(article['sentences'][i]['sentence']))
-            except:
-                new_seq.append("ENDPAD")
-        X.append(new_seq)
-    
-    if not is_test: 
-        y = [[sent['label'] for sent in article['sentences']] for article in data_]
-        y = pad_sequences(maxlen=max_len, sequences=y, padding="post", value=0)
-        y = [[to_categorical(lab, num_classes=n_tags) for lab in sent] for sent in y]
-    else:
-        y = [sent['label'] for article in data_ for sent in article['sentences']]
+        limit = len(X) if len(X)%batch_size == 0 else len(X)-len(X)%batch_size
+        X = X[:limit]
+        y = y[:limit]
 
     return np.array(X), np.array(y)
 
-def get_scores(model, data_, batch_size, max_len, n_tags, results_file, print_out=False):
+def get_scores(model, data_, batch_size, ww, n_tags, results_file, print_out=False):
     
-    def unpad(X, y_preds):
-        y_unpad = []
-        for ai, art in enumerate(X):
-            for si, sent in enumerate(art):
-                if sent != 'ENDPAD':
-                    y_unpad.append(y_preds[ai][si])
-        return y_unpad
-    
-    X, y = get_input(data_, max_len, n_tags, batch_size, is_test=True, limit=None)
+    X, y = get_input(data_, ww, n_tags, batch_size, is_test=True, limit=None)
     
     y_preds = model.predict(X, batch_size=batch_size)
-    y_preds = unpad(X, y_preds)
     y_preds = np.argmax(y_preds, axis=1)
     
     clsrpt = classification_report(y, y_preds)
     sfm = scikit_f1_score(y, y_preds, average='macro')
-    
+
     if print_out:
         print(clsrpt)
         print('\nScikit_F1_Macro:', sfm)
 
     if results_file:
         with open(results_file, 'a') as f:
-            f.write('\n' + clsrpt + '\n' + str(sfm) + '\n')
-            
+            f.write('\n' + clsrpt + '\n' + str(sfm) + '\n\n')
+    
     return sfm
+
 
 ################# MAIN #################
 
@@ -356,25 +380,25 @@ if __name__ == '__main__':
 
     #### INIT PARAMS ####
 
-    max_len = 58
+    ww = 1
     n_tags = 2
-    batch_size = 2
+    batch_size = 32
 
     build_models_functions = {
-#         'model_0': build_model_0(max_len, n_tags),
-#         'model_1': build_model_1(max_len, n_tags),
-#         'model_2': build_model_2(max_len, n_tags),
-#         'model_3': build_model_3(max_len, n_tags),
-#         'model_4': build_model_4(max_len, n_tags),
-#         'model_5': build_model_5(max_len, n_tags),
-#         'model_6': build_model_6(max_len, n_tags),
-#         'model_7': build_model_7(max_len, n_tags),
-#         'model_8': build_model_8(max_len, n_tags),
-#         'model_9': build_model_9(max_len, n_tags),
-#         'model_10': build_model_10(max_len, n_tags),
-         'model_11': build_model_11(max_len, n_tags),
-         'model_12': build_model_12(max_len, n_tags),
-         'model_13': build_model_13(max_len, n_tags),
+#         'model_0': build_model_0(ww, n_tags),
+#         'model_1': build_model_1(ww, n_tags),
+#         'model_2': build_model_2(ww, n_tags),
+#         'model_3': build_model_3(ww, n_tags),
+#         'model_4': build_model_4(ww, n_tags),
+#         'model_5': build_model_5(ww, n_tags),
+#         'model_6': build_model_6(ww, n_tags),
+#         'model_7': build_model_7(ww, n_tags),
+#         'model_8': build_model_8(ww, n_tags),
+#         'model_9': build_model_9(ww, n_tags),
+        'model_10': build_model_10(ww, n_tags),
+        'model_11': build_model_11(ww, n_tags),
+        'model_12': build_model_12(ww, n_tags),
+        'model_13': build_model_13(ww, n_tags),
     }
 
     optimizer_configs = [
@@ -395,9 +419,9 @@ if __name__ == '__main__':
 #     valid_data = valid_data[:4]
 #     test_data = test_data[:4]
 
-    X_tra, y_tra = get_input(train_data, max_len, n_tags, batch_size, is_test=False, limit=None)
-    X_val, y_val = get_input(valid_data, max_len, n_tags, batch_size, is_test=False, limit=None)
-
+    X_tra, y_tra = get_input(train_data, ww, n_tags, batch_size, is_test=False, limit=None)
+    X_val, y_val = get_input(valid_data, ww, n_tags, batch_size, is_test=False, limit=None)
+  
     del train_data
 
     model = None
@@ -427,8 +451,8 @@ if __name__ == '__main__':
                 if optimizer_name == 'adam':
                     optimizer = Adam(lr=lr)
 
-                elif optimizer_name == 'adamax':
-                    optimizer = Adamax(lr=lr)
+#                 elif optimizer_name == 'adamax':
+#                     optimizer = Adamax(lr=lr)
 
                 elif optimizer_name == 'rmsprop':
                     optimizer = RMSprop(lr=lr)
@@ -439,14 +463,14 @@ if __name__ == '__main__':
 
                 model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
-                model_name = 'Optimized_RQ2_elmo' + \
+                model_name = 'Optimized_RQ2_elmo_many_to_one' + \
                              '_' + fname + \
+                             '_ww_' + str(ww) + \
                              '_' + optimizer_name +  \
                              '_lr_' + str(lr) +  \
                              '_lrreduction' + \
-                             '_loss_' + loss + \
-                             '_maxlen_' + str(max_len)
-
+                             '_loss_' + loss 
+                            
                 model_main = './Model/' + model_name.split('model')[0] + 'model/'
                 model_dir = os.path.join(model_main, model_name)
                 score_file = os.path.join(model_main, 'model_performances.csv')
@@ -480,12 +504,12 @@ if __name__ == '__main__':
                 with open(results_file, 'w') as f:
                     f.write('\n---------------- Validation ----------------\n')
 
-                val_f1 = get_scores(best_model, valid_data, batch_size, max_len, n_tags, results_file)
+                val_f1 = get_scores(best_model, valid_data, batch_size, ww, n_tags, results_file, print_out=False)
 
                 with open(results_file, 'a') as f:
                     f.write('\n---------------- Test ----------------\n')
 
-                test_f1 = get_scores(best_model, test_data, batch_size, max_len, n_tags, results_file)
+                test_f1 = get_scores(best_model, test_data, batch_size, ww, n_tags, results_file, print_out=False)
 
                 if not os.path.exists(score_file):
                     with open(score_file, 'w') as scrf:

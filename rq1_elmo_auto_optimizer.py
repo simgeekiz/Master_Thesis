@@ -363,6 +363,7 @@ def build_model_12(n_tags):
 
     return Model(inputs=[input_text], outputs=pred)
 
+
 def build_model_13(n_tags):
 
     def residual(x):
@@ -370,11 +371,6 @@ def build_model_13(n_tags):
 
         x = Dense(256, kernel_regularizer=l2(0.001))(x)
         x = Activation('relu')(x)
-        x = BatchNormalization()(x)
-
-        x = Dense(256, kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
-        x = BatchNormalization()(x)
 
         x = add([x, x_res])
         return x
@@ -387,14 +383,38 @@ def build_model_13(n_tags):
 
     x = residual(x)
 
-    x = Dense(256, kernel_regularizer=l2(0.001))(x)
+    x = Dense(128, kernel_regularizer=l2(0.001))(x)
     x = Activation('relu')(x)
-    x = BatchNormalization()(x)
-    
+
     pred = Dense(n_tags, activation='sigmoid')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
+def build_model_14(n_tags):
+
+    def residual(x):
+        x_res = x
+
+        x = Dense(128, kernel_regularizer=l2(0.001))(x)
+        x = Activation('relu')(x)
+
+        x = add([x, x_res])
+        return x
+
+    input_text = Input(shape=(1,), dtype="string")
+    embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
+
+    x = Dense(128, kernel_regularizer=l2(0.001))(embedding)
+    x = Activation('relu')(x)
+
+    x = residual(x)
+
+    x = Dense(64, kernel_regularizer=l2(0.001))(x)
+    x = Activation('relu')(x)
+
+    pred = Dense(n_tags, activation='sigmoid')(x)
+
+    return Model(inputs=[input_text], outputs=pred)
 
 ################# UTILS #################
 
@@ -444,28 +464,29 @@ if __name__ == '__main__':
     batch_size = 32
 
     build_models_functions = {
-        'model_0': build_model_0(n_tags),
-        'model_1': build_model_1(n_tags),
-        'model_2': build_model_2(n_tags),
-        'model_3': build_model_3(n_tags),
-        'model_4': build_model_4(n_tags),
-        'model_5': build_model_5(n_tags),
-        'model_6': build_model_6(n_tags),
-        'model_7': build_model_7(n_tags),
-        'model_8': build_model_8(n_tags),
-        'model_9': build_model_9(n_tags),
-        'model_10': build_model_10(n_tags),
-        'model_11': build_model_11(n_tags),
-        'model_12': build_model_12(n_tags),
+#         'model_0': build_model_0(n_tags),
+#         'model_1': build_model_1(n_tags),
+#         'model_2': build_model_2(n_tags),
+#         'model_3': build_model_3(n_tags),
+#         'model_4': build_model_4(n_tags),
+#         'model_5': build_model_5(n_tags),
+#         'model_6': build_model_6(n_tags),
+#         'model_7': build_model_7(n_tags),
+#         'model_8': build_model_8(n_tags),
+#         'model_9': build_model_9(n_tags),
+#         'model_10': build_model_10(n_tags),
+#         'model_11': build_model_11(n_tags),
+#         'model_12': build_model_12(n_tags),
+        
     }
 
     optimizer_configs = [
         {'name': 'adam',
-         'lro': [0.01, 0.001]},
-        {'name': 'adamax',
-         'lro': [0.01, 0.001]},
+         'lro': [0.001, 0.005]},#0.01,
+#         {'name': 'adamax',
+#          'lro': [0.01, 0.001]},#0.01,
         {'name': 'rmsprop',
-         'lro': [0.01, 0.001]},
+         'lro': [0.001, 0.005]},#0.01,
     ]
 
     #### LOAD DATA ####
