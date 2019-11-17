@@ -1,10 +1,11 @@
 
-python rq1_bert_auto_optimizer_adam_lr_0_001.py
-python rq1_bert_auto_optimizer_adam_lr_0_0001.py
-python rq1_bert_auto_optimizer_adam_lr_2e_5.py
-# python rq1_bert_auto_optimizer_adamax_lr_0_001.py
-# python rq1_bert_auto_optimizer_adamax_lr_0_0001.py
-# python rq1_bert_auto_optimizer_adamax_lr_2e_5.py
-python rq1_bert_auto_optimizer_rmsprop_lr_0_001.py
-python rq1_bert_auto_optimizer_rmsprop_lr_0_0001.py
-python rq1_bert_auto_optimizer_rmsprop_lr_2e_5.py
+python rq2_bert_auto_optimizer_many_to_one.py 0
+python rq2_bert_auto_optimizer_many_to_one.py 1
+python rq2_bert_auto_optimizer_many_to_one.py 2
+python rq2_bert_auto_optimizer_many_to_one.py 3
+python rq2_bert_auto_optimizer_many_to_one.py 4
+python rq2_bert_auto_optimizer_many_to_one.py 5
+python rq2_bert_auto_optimizer_many_to_one.py 6
+python rq2_bert_auto_optimizer_many_to_one.py 7
+python rq2_bert_auto_optimizer_many_to_one.py 8
+python rq2_bert_auto_optimizer_many_to_one.py 9

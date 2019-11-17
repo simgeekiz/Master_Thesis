@@ -61,32 +61,32 @@ def build_model_0(ww, n_tags):
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_1(ww, n_tags):
+# def build_model_1(ww, n_tags):
     
-    inp_size = 2*ww+1
-    input_text = Input(shape=(inp_size,), dtype="string")
+#     inp_size = 2*ww+1
+#     input_text = Input(shape=(inp_size,), dtype="string")
     
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
+#     embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
-    x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(embedding)
+#     x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(embedding)
 
-    pred = LSTM(n_tags, activation="sigmoid")(x)
+#     pred = LSTM(n_tags, activation="sigmoid")(x)
 
-    return Model(inputs=[input_text], outputs=pred)
+#     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_2(ww, n_tags):
+# def build_model_2(ww, n_tags):
     
-    inp_size = 2*ww+1
-    input_text = Input(shape=(inp_size,), dtype="string")
+#     inp_size = 2*ww+1
+#     input_text = Input(shape=(inp_size,), dtype="string")
     
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
+#     embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
-    x = Bidirectional(CuDNNLSTM(units=256, return_sequences=True))(embedding)
-    x = Dropout(0.2)(x)
+#     x = Bidirectional(CuDNNLSTM(units=256, return_sequences=True))(embedding)
+#     x = Dropout(0.2)(x)
                       
-    pred = LSTM(n_tags, activation="sigmoid")(x)
+#     pred = LSTM(n_tags, activation="sigmoid")(x)
 
-    return Model(inputs=[input_text], outputs=pred)
+#     return Model(inputs=[input_text], outputs=pred)
 
 def build_model_3(ww, n_tags):
     
@@ -104,37 +104,36 @@ def build_model_3(ww, n_tags):
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_4(ww, n_tags):
+# def build_model_4(ww, n_tags):
     
-    inp_size = 2*ww+1
-    input_text = Input(shape=(inp_size,), dtype="string")
+#     inp_size = 2*ww+1
+#     input_text = Input(shape=(inp_size,), dtype="string")
 
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
+#     embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
-    x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
-    x = Activation('relu')(x)
+#     x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
+#     x = Activation('relu')(x)
     
-    x = Bidirectional(LSTM(units=128, return_sequences=True, recurrent_dropout=0.2, dropout=0.2))(x)
+#     x = Bidirectional(LSTM(units=128, return_sequences=True, recurrent_dropout=0.2, dropout=0.2))(x)
 
-    pred = LSTM(n_tags, activation="sigmoid")(x)
+#     pred = LSTM(n_tags, activation="sigmoid")(x)
 
-    return Model(inputs=[input_text], outputs=pred)
+#     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_5(ww, n_tags):
+# def build_model_5(ww, n_tags):
     
-    inp_size = 2*ww+1
-    input_text = Input(shape=(inp_size,), dtype="string")
+#     inp_size = 2*ww+1
+#     input_text = Input(shape=(inp_size,), dtype="string")
 
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
+#     embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
-    x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(embedding)
-    x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(x)
-    x = Dropout(0.4)(x)
+#     x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(embedding)
+#     x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(x)
+#     x = Dropout(0.4)(x)
     
-    pred = LSTM(n_tags, activation="sigmoid")(x)
+#     pred = LSTM(n_tags, activation="sigmoid")(x)
 
-    return Model(inputs=[input_text], outputs=pred)
-
+#     return Model(inputs=[input_text], outputs=pred)
 
 
 def build_model_6(ww, n_tags):
@@ -152,19 +151,19 @@ def build_model_6(ww, n_tags):
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_7(ww, n_tags):
+# def build_model_7(ww, n_tags):
     
-    inp_size = 2*ww+1
-    input_text = Input(shape=(inp_size,), dtype="string")
+#     inp_size = 2*ww+1
+#     input_text = Input(shape=(inp_size,), dtype="string")
 
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
+#     embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
-    x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(embedding)
-    x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(x)
+#     x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(embedding)
+#     x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(x)
     
-    pred = LSTM(n_tags, activation="sigmoid")(x)
+#     pred = LSTM(n_tags, activation="sigmoid")(x)
 
-    return Model(inputs=[input_text], outputs=pred)
+#     return Model(inputs=[input_text], outputs=pred)
 
 def build_model_8(ww, n_tags):
     
@@ -208,28 +207,26 @@ def build_model_9(ww, n_tags):
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_10(ww, n_tags):
+# def build_model_10(ww, n_tags):
     
-    def residual(x):
-        x_res = x
+#     def residual(x):
+#         x_res = x
         
-        x = Bidirectional(CuDNNLSTM(units=256, return_sequences=True))(x)
-        x = add([x, x_res])
-        return x
+#         x = Bidirectional(CuDNNLSTM(units=256, return_sequences=True))(x)
+#         x = add([x, x_res])
+#         return x
     
-    inp_size = 2*ww+1
-    input_text = Input(shape=(inp_size,), dtype="string")
-    embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
+#     inp_size = 2*ww+1
+#     input_text = Input(shape=(inp_size,), dtype="string")
+#     embedding = Lambda(ELMoEmbeddingStack, output_shape=(None, None, inp_size, 1024))(input_text)
     
-    x = Bidirectional(CuDNNLSTM(units=256, return_sequences=True))(embedding)
-    x = residual(x)
-    x = Dropout(0.4)(x)
+#     x = Bidirectional(CuDNNLSTM(units=256, return_sequences=True))(embedding)
+#     x = residual(x)
+#     x = Dropout(0.4)(x)
 
-    pred = LSTM(n_tags, activation="sigmoid")(x)
+#     pred = LSTM(n_tags, activation="sigmoid")(x)
 
-    return Model(inputs=[input_text], outputs=pred)
-
-
+#     return Model(inputs=[input_text], outputs=pred)
 
 def build_model_11(ww, n_tags):
     
@@ -247,8 +244,8 @@ def build_model_11(ww, n_tags):
     
     x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
     x = Activation('relu')(x)
-
-    x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(embedding)
+    # Note: bir alttaki satirda x yerine embedding yazilmisti.
+    x = Bidirectional(CuDNNLSTM(units=128, return_sequences=True))(x)
     x = residual(x)
 
     pred = LSTM(n_tags, activation="sigmoid")(x)
@@ -355,21 +352,23 @@ def get_input(data_, ww, n_tags, batch_size, is_test=False, limit=None):
 
 def get_scores(model, data_, batch_size, ww, n_tags, results_file, print_out=False):
     
-    X, y = get_input(data_, ww, n_tags, batch_size, is_test=True, limit=None)
+    X, y_true = get_input(data_, ww, n_tags, batch_size, is_test=True, limit=None)
     
     y_preds = model.predict(X, batch_size=batch_size)
     y_preds = np.argmax(y_preds, axis=1)
     
-    clsrpt = classification_report(y, y_preds)
-    sfm = scikit_f1_score(y, y_preds, average='macro')
+    clsrpt = classification_report(y_true, y_preds)
+    sf1 = scikit_f1_score(y_true, y_preds)
+    sfm = scikit_f1_score(y_true, y_preds, average='macro')
 
     if print_out:
         print(clsrpt)
         print('\nScikit_F1_Macro:', sfm)
+        print('\nScikit_F1_1:', sf1)
 
     if results_file:
         with open(results_file, 'a') as f:
-            f.write('\n' + clsrpt + '\n' + str(sfm) + '\n\n')
+            f.write('\n' + clsrpt + '\nF1_Macro: ' + str(sfm) + '\nF1_1: ' + str(sf1) + '\n\n')
     
     return sfm
 
@@ -380,7 +379,7 @@ if __name__ == '__main__':
 
     #### INIT PARAMS ####
 
-    ww = 1
+    ww = 3
     n_tags = 2
     batch_size = 32
 
@@ -395,10 +394,10 @@ if __name__ == '__main__':
 #         'model_7': build_model_7(ww, n_tags),
 #         'model_8': build_model_8(ww, n_tags),
 #         'model_9': build_model_9(ww, n_tags),
-        'model_10': build_model_10(ww, n_tags),
-        'model_11': build_model_11(ww, n_tags),
-        'model_12': build_model_12(ww, n_tags),
-        'model_13': build_model_13(ww, n_tags),
+#         'model_10': build_model_10(ww, n_tags),
+#         'model_11': build_model_11(ww, n_tags),
+#         'model_12': build_model_12(ww, n_tags),
+#         'model_13': build_model_13(ww, n_tags),
     }
 
     optimizer_configs = [
@@ -451,8 +450,8 @@ if __name__ == '__main__':
                 if optimizer_name == 'adam':
                     optimizer = Adam(lr=lr)
 
-#                 elif optimizer_name == 'adamax':
-#                     optimizer = Adamax(lr=lr)
+                elif optimizer_name == 'adamax':
+                    optimizer = Adamax(lr=lr)
 
                 elif optimizer_name == 'rmsprop':
                     optimizer = RMSprop(lr=lr)

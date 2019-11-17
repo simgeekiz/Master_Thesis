@@ -178,21 +178,23 @@ def get_input(data_, n_tags, is_test=False):
 
 def get_scores(model, data_, batch_size, n_tags, results_file, print_out=False):
 
-    X, y = get_input(data_, n_tags, True)
+    X, y_true = get_input(data_, n_tags, True)
 
     y_preds = model.predict(X, batch_size=batch_size)
     y_preds = np.argmax(y_preds, axis=1)
 
-    clsrpt = classification_report(y, y_preds)
-    sfm = scikit_f1_score(y, y_preds, average='macro')
+    clsrpt = classification_report(y_true, y_preds)
+    sf1 = scikit_f1_score(y_true, y_preds)
+    sfm = scikit_f1_score(y_true, y_preds, average='macro')
 
     if print_out:
         print(clsrpt)
         print('\nScikit_F1_Macro:', sfm)
+        print('\nScikit_F1_1:', sf1)
 
     if results_file:
         with open(results_file, 'a') as f:
-            f.write('\n' + clsrpt + '\n' + str(sfm) + '\n\n')
+            f.write('\n' + clsrpt + '\nF1_Macro: ' + str(sfm) + '\nF1_1: ' + str(sf1) + '\n\n')
 
     return sfm
 
