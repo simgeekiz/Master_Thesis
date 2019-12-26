@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-#Directories 
+#Directories
 *.h5
 Preds/
 bert_input/
@@ -24,6 +24,8 @@ TEz/
 Heidel/
 Batches/
 Not_used/
+.idea/
+images/
 
 .DS_Store
 .env

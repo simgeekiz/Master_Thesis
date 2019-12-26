@@ -34,11 +34,13 @@ sess = tf.compat.v1.Session()
 with tf.device("gpu:0"):
     print("GPU enabled")
 
-BERT_PATH = "https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1"
+os.environ["TFHUB_CACHE_DIR"] = '/tmp/tfhub'
 
-bert = hub.Module(BERT_PATH, trainable=True)
+bert_path = "https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1"
 
-ww = 3
+bert = hub.Module(bert_path, trainable=True)
+
+ww = 1
 
 def BERTEmbeddingStack(x):
     embeds = []
@@ -59,12 +61,14 @@ def BERTEmbeddingStack(x):
         input_mask = tf.cast(art[1], tf.float32)
         pooled = masked_reduce_mean(result, input_mask)
         embeds.append(pooled)
-    print(tf.stack(embeds, 0))
+    # print(tf.stack(embeds, 0))
     return tf.stack(embeds, 0)
 
 ################# MODELS #################
 
-def build_model_0(ww):
+
+def build_model_0(ww, max_seq_length):
+
     inp_size = 2 * ww + 1
     input_text = Input(shape=(3, inp_size, max_seq_length))
 
@@ -72,12 +76,13 @@ def build_model_0(ww):
 
     x = Bidirectional(LSTM(units=256, return_sequences=True))(bert_output)
 
-    pred = LSTM(1, activation="sigmoid")(x)
+    pred = LSTM(1, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_1(ww):
+def build_model_1(ww, max_seq_length):
+
     inp_size = 2 * ww + 1
     input_text = Input(shape=(3, inp_size, max_seq_length))
 
@@ -85,26 +90,28 @@ def build_model_1(ww):
 
     x = Bidirectional(LSTM(units=128, return_sequences=True))(bert_output)
 
-    pred = LSTM(1, activation="sigmoid")(x)
+    pred = LSTM(1, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_2(ww):
+def build_model_2(ww, max_seq_length):
+
     inp_size = 2 * ww + 1
     input_text = Input(shape=(3, inp_size, max_seq_length))
 
     bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
 
     x = Bidirectional(LSTM(units=256, return_sequences=True))(bert_output)
-    x = Dropout(0.2)(x)
+    x = Dropout(0.4)(x)
 
-    pred = LSTM(1, activation="sigmoid")(x)
+    pred = LSTM(1, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_3(ww):
+def build_model_3(ww, max_seq_length):
+
     inp_size = 2 * ww + 1
     input_text = Input(shape=(3, inp_size, max_seq_length))
 
@@ -115,12 +122,13 @@ def build_model_3(ww):
 
     x = Bidirectional(LSTM(units=128, return_sequences=True))(x)
 
-    pred = LSTM(1, activation="sigmoid")(x)
+    pred = LSTM(1, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_4(ww):
+def build_model_4(ww, max_seq_length):
+
     inp_size = 2 * ww + 1
     input_text = Input(shape=(3, inp_size, max_seq_length))
 
@@ -131,32 +139,65 @@ def build_model_4(ww):
 
     x = Bidirectional(LSTM(units=128, return_sequences=True, recurrent_dropout=0.2, dropout=0.2))(x)
 
-    pred = LSTM(1, activation="sigmoid")(x)
+    pred = LSTM(1, activation='softmax')(x)
+
+    return Model(inputs=[input_text], outputs=pred)
+
+
+def build_model_5(ww, max_seq_length):
+
+    inp_size = 2 * ww + 1
+    input_text = Input(shape=(3, inp_size, max_seq_length))
+
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+
+    x = Bidirectional(LSTM(units=128, return_sequences=True))(bert_output)
+    x = Dropout(0.4)(x)
+
+    x = Bidirectional(LSTM(units=128, return_sequences=True))(x)
+
+    pred = LSTM(1, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
 def build_model_6(ww):
+
     inp_size = 2 * ww + 1
     input_text = Input(shape=(3, inp_size, max_seq_length))
 
     bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
 
     x = Bidirectional(LSTM(units=256, return_sequences=True))(bert_output)
-    x = Bidirectional(LSTM(units=128, return_sequences=True))(x)
     x = Dropout(0.4)(x)
 
-    pred = LSTM(1, activation="sigmoid")(x)
+    x = Bidirectional(LSTM(units=128, return_sequences=True))(x)
+
+    pred = LSTM(1, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_8(ww):
-    def residual(x):
-        x_res = x
+def build_model_7(ww):
 
-        x = Bidirectional(LSTM(units=128, return_sequences=True))(x)
-        x = add([x, x_res])
+    inp_size = 2 * ww + 1
+    input_text = Input(shape=(3, inp_size, max_seq_length))
+
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+
+    x = Bidirectional(LSTM(units=128, return_sequences=True))(bert_output)
+    x = Bidirectional(LSTM(units=128, return_sequences=True))(x)
+
+    pred = LSTM(1, activation='softmax')(x)
+
+    return Model(inputs=[input_text], outputs=pred)
+
+
+def build_model_8(ww, max_seq_length):
+
+    def residual(x):
+        x_res = Bidirectional(LSTM(units=128, return_sequences=True))(x)
+        x = add([x_res, x])
         return x
 
     inp_size = 2 * ww + 1
@@ -165,19 +206,63 @@ def build_model_8(ww):
     bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
 
     x = Bidirectional(LSTM(units=128, return_sequences=True))(bert_output)
+
     x = residual(x)
 
-    pred = LSTM(1, activation="sigmoid")(x)
+    pred = LSTM(1, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_11(ww):
-    def residual(x):
-        x_res = x
+def build_model_9(ww, max_seq_length):
 
-        x = Bidirectional(LSTM(units=128, return_sequences=True))(x)
-        x = add([x, x_res])
+    def residual(x):
+        x_res = Bidirectional(LSTM(units=256, return_sequences=True))(x)
+        x = add([x_res, x])
+        return x
+
+    inp_size = 2 * ww + 1
+    input_text = Input(shape=(3, inp_size, max_seq_length))
+
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+
+    x = Bidirectional(LSTM(units=256, return_sequences=True))(bert_output)
+
+    x = residual(x)
+
+    pred = LSTM(1, activation='softmax')(x)
+
+    return Model(inputs=[input_text], outputs=pred)
+
+
+def build_model_10(ww, max_seq_length):
+
+    def residual(x):
+        x_res = Bidirectional(LSTM(units=256, return_sequences=True))(x)
+        x = add([x_res, x])
+        return x
+
+    inp_size = 2 * ww + 1
+    input_text = Input(shape=(3, inp_size, max_seq_length))
+
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+
+    x = Bidirectional(LSTM(units=256, return_sequences=True))(bert_output)
+
+    x = residual(x)
+
+    x = Dropout(0.4)(x)
+
+    pred = LSTM(1, activation='softmax')(x)
+
+    return Model(inputs=[input_text], outputs=pred)
+
+
+def build_model_11(ww, max_seq_length):
+
+    def residual(x):
+        x_res = Bidirectional(LSTM(units=128, return_sequences=True))(x)
+        x = add([x_res, x])
         return x
 
     inp_size = 2 * ww + 1
@@ -189,19 +274,19 @@ def build_model_11(ww):
     x = Activation('relu')(x)
 
     x = Bidirectional(LSTM(units=128, return_sequences=True))(x)
+
     x = residual(x)
 
-    pred = LSTM(1, activation="sigmoid")(x)
+    pred = LSTM(1, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_12(ww):
-    def residual(x):
-        x_res = x
+def build_model_12(ww, max_seq_length):
 
-        x = Bidirectional(LSTM(units=256, return_sequences=True))(x)
-        x = add([x, x_res])
+    def residual(x):
+        x_res = Bidirectional(LSTM(units=256, return_sequences=True))(x)
+        x = add([x_res, x])
         return x
 
     inp_size = 2 * ww + 1
@@ -215,19 +300,16 @@ def build_model_12(ww):
     x = Bidirectional(LSTM(units=256, return_sequences=True))(x)
     x = residual(x)
 
-    pred = LSTM(1, activation="sigmoid")(x)
+    pred = LSTM(1, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_13(ww):
+def build_model_13(ww, max_seq_length):
+
     def residual(x):
-        x_res = x
-
-        x = Bidirectional(LSTM(units=128, return_sequences=True,
-                               recurrent_dropout=0.2, dropout=0.2))(x)
-
-        x = add([x, x_res])
+        x_res = Bidirectional(LSTM(units=128, return_sequences=True, recurrent_dropout=0.2, dropout=0.2))(x)
+        x = add([x_res, x])
         return x
 
     inp_size = 2 * ww + 1
@@ -243,7 +325,7 @@ def build_model_13(ww):
 
     x = residual(x)
 
-    pred = LSTM(1, activation="sigmoid")(x)
+    pred = LSTM(1, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
@@ -262,7 +344,7 @@ def get_padding_sentence(max_seq_length, tokenizer, padding_text='ENDPAD'):
 
 def get_input(data_, ww, max_seq_length, batch_size, limit=None):
 
-    tokenizer = create_tokenizer_from_hub_module(BERT_PATH)
+    tokenizer = create_tokenizer_from_hub_module(bert_path)
 
     padding_sent = get_padding_sentence(max_seq_length, tokenizer, padding_text='ENDPAD')
 
@@ -332,17 +414,16 @@ def get_input(data_, ww, max_seq_length, batch_size, limit=None):
             X.append(X_seq)
             y.append(y_seq)
 
-    # limit data if not an even number when batch_size=2
-    if not limit:
-        limit = len(X) if len(X) % batch_size == 0 else len(X) - len(X) % batch_size
-        X = X[:limit]
-        y = y[:limit]
+    # # limit data if not an even number when batch_size=2
+    # if not limit:
+    #     limit = len(X) if len(X) % batch_size == 0 else len(X) - len(X) % batch_size
+    # X = X[:limit]
+    # y = y[:limit]
 
     return np.array(X), np.array(y)
 
 
-def get_scores(model, data_, batch_size, ww, max_seq_length,
-               results_file=None, print_out=False):
+def get_scores(model, data_, batch_size, ww, max_seq_length, results_file=None, print_out=False):
 
     X, y_true = get_input(data_, ww, max_seq_length, batch_size, limit=None)
     y_true = [y[0] for y in y_true]
@@ -369,42 +450,28 @@ def get_scores(model, data_, batch_size, ww, max_seq_length,
 
 if __name__ == '__main__':
 
+    if len(sys.argv) < 4:
+        print(("############################\n"
+               "ERROR: Give the arguments; model_no, optimizer, learning_rate"
+               "\n############################"))
+        sys.exit()
+
     #### INIT PARAMS ####
 
-    batch_size = 2
+    batch_size = 32
     max_seq_length = 512
     if max_seq_length > 512:
-        print('!!!!!!! WARNING: BERT does not accept length > 512')
+        print('!!!!!!! WARNING: BERT does not accept length > 512. It is set to 512.')
         max_seq_length = 512
 
-    build_models_functions = {
-        'model_0': build_model_0(ww),
-        'model_1': build_model_1(ww),
-        'model_2': build_model_2(ww),
-        'model_3': build_model_3(ww),
-        'model_4': build_model_4(ww),
-        'model_6': build_model_6(ww),
-        'model_8': build_model_8(ww),
-        'model_11': build_model_11(ww),
-        'model_12': build_model_12(ww),
-        'model_13': build_model_13(ww),
-    }
+    model_no = sys.argv[1]
+    optimizer_name = sys.argv[2]
+    lr = float(sys.argv[3])
 
-    if len(sys.argv) > 1:
-        model_no = int(sys.argv[1])
-        selected_model = list(build_models_functions.keys())[model_no]
-        build_models_functions = {k:v for k,v in build_models_functions.items() if k == selected_model}
+    epochs = 1
 
-    optimizer_configs = [
-        {'name': 'adam',
-         'lro': [0.001, 0.0001, 2e-5]},
-        # {'name': 'adamax',
-        #  'lro': [0.001, 0.0001, 2e-5]},
-        {'name': 'rmsprop',
-         'lro': [0.001, 0.0001, 2e-5]},
-    ]
-
-    epoch_options = [1]
+    loss = 'binary_crossentropy'
+    metrics = ['acc', f1_macro, f1_micro]
 
     #### LOAD DATA ####
 
@@ -420,100 +487,77 @@ if __name__ == '__main__':
 
     del train_data
 
-    model = None
-    optimizer = None
+    #### CONFIGURE MODEL ####
 
-    loss = 'binary_crossentropy'
-    metrics = ['acc', f1_macro, f1_micro]
+    model = getattr(sys.modules[__name__], 'build_model_' + model_no)(ww, max_seq_length=max_seq_length)
 
-    for fname, func in build_models_functions.items():
+    if optimizer_name == 'adam':
+        optimizer = Adam(lr=lr)
 
-        print("\n----------------------------------\n")
-        print("Starting model:", fname)
+    elif optimizer_name == 'adamax':
+        optimizer = Adamax(lr=lr)
 
-        for opco in optimizer_configs:
+    elif optimizer_name == 'rmsprop':
+        optimizer = RMSprop(lr=lr)
 
-            optimizer_name = opco['name']
+    else:
+        print(("############################\nERROR: Unknown optimizer name!\n############################"))
+        sys.exit()
 
-            print("Testing optimizer:", optimizer_name)
+    model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
-            for lr in opco['lro']:
+    model_name = 'Optimized_RQ2_bert_many_to_one' + \
+                 '_model_' + model_no + \
+                 '_ww_' + str(ww) + \
+                 '_' + optimizer_name + \
+                 '_lr_' + str(lr) + \
+                 '_epochs_' + str(epochs) + \
+                 '_loss_' + loss + \
+                 '_softmax'
 
-                print("Learning rate:", str(lr))
+    model_main = './Model/' + model_name.split('model')[0] + 'model/'
+    model_dir = os.path.join(model_main, model_name)
+    score_file = os.path.join(model_main, 'model_performances.csv')
+    results_file = os.path.join(model_dir, 'model_results_file.txt')
 
-                for epochs in epoch_options:
+    print("\n----------------------------------\nFitting the model: ", model_name)
 
-                    if optimizer:
-                        del optimizer
+    # Instantiate variables
+    initialize_vars(sess)
 
-                    if optimizer_name == 'adam':
-                        optimizer = Adam(lr=lr)
+    model.fit(X_tra, y_tra,
+              epochs=epochs,
+              batch_size=batch_size,
+              validation_data=(X_val, y_val),
+              callbacks=[
+                  PlotCurves(model_name=model_name,
+                             model_dir=model_dir,
+                             plt_show=False,
+                             jnote=False)
+              ])
 
-                    elif optimizer_name == 'adamax':
-                        optimizer = Adamax(lr=lr)
+    print("Evaluating the model...")
 
-                    elif optimizer_name == 'rmsprop':
-                        optimizer = RMSprop(lr=lr)
+    with open(results_file, 'w') as f:
+        f.write('\n---------------- Validation ----------------\n')
 
-                    if model:
-                        del model
-                    model = func
+    val_f1 = get_scores(model, valid_data, batch_size, ww, max_seq_length, results_file)
 
-                    model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
+    with open(results_file, 'a') as f:
+        f.write('\n---------------- Test ----------------\n')
 
-                    print("\n#################\nWINDOW SIZE: " + str(ww) + "\n#################\n")
+    test_f1 = get_scores(model, test_data, batch_size, ww, max_seq_length, results_file)
 
-                    model_name = 'Optimized_RQ2_bert_many_to_one' + \
-                                 '_' + fname + \
-                                 '_ww_' + str(ww) + \
-                                 '_' + optimizer_name + \
-                                 '_lr_' + str(lr) + \
-                                 '_epochs_' + str(epochs) + \
-                                 '_loss_' + loss
+    if not os.path.exists(score_file):
+        with open(score_file, 'w') as scrf:
+            scrf.write("model_name,val_f1_macro,test_f1_macro\n")
 
-                    model_main = './Model/' + model_name.split('model')[0] + 'model/'
-                    model_dir = os.path.join(model_main, model_name)
-                    score_file = os.path.join(model_main, 'model_performances.csv')
-                    results_file = os.path.join(model_dir, 'model_results_file.txt')
+    with open(score_file, 'a') as scrf:
+        scrf.write(
+            '\n' + \
+            model_name + ',' + \
+            str(val_f1) + ',' + \
+            str(test_f1) + '\n'
+        )
 
-                    print("Fitting the model", model_name)
-
-                    # Instantiate variables
-                    initialize_vars(sess)
-
-                    model.fit(X_tra, y_tra,
-                              epochs=epochs,
-                              batch_size=batch_size,
-                              validation_data=(X_val, y_val),
-                              callbacks=[
-                                  PlotCurves(model_name=model_name,
-                                             model_dir=model_dir,
-                                             plt_show=False,
-                                             jnote=False)
-                              ])
-
-                    print("Evaluating the model...")
-
-                    with open(results_file, 'w') as f:
-                        f.write('\n---------------- Validation ----------------\n')
-
-                    val_f1 = get_scores(model, valid_data, batch_size, ww, max_seq_length, results_file)
-
-                    with open(results_file, 'a') as f:
-                        f.write('\n---------------- Test ----------------\n')
-
-                    test_f1 = get_scores(model, test_data, batch_size, ww, max_seq_length, results_file)
-
-                    if not os.path.exists(score_file):
-                        with open(score_file, 'w') as scrf:
-                            scrf.write("model_name,val_f1_macro,test_f1_macro\n")
-
-                    with open(score_file, 'a') as scrf:
-                        scrf.write(
-                            '\n' + \
-                            model_name + ',' + \
-                            str(val_f1) + ',' + \
-                            str(test_f1) + '\n'
-                        )
-
-                    print("Finished:", model_name)
+    print("Finished:", model_name)

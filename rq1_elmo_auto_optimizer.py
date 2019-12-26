@@ -1,4 +1,3 @@
-
 import os
 import numpy as np
 
@@ -29,16 +28,19 @@ from src.load_data import load_data
 sess = tf.compat.v1.Session()
 K.set_session(sess)
 
-elmo = hub.Module("https://tfhub.dev/google/elmo/2", trainable=True)
+os.environ["TFHUB_CACHE_DIR"] = '/tmp/tfhub'
+
+elmo = hub.Module('https://tfhub.dev/google/elmo/3', trainable=True)
+print("ELMo model loaded")
 
 def ELMoEmbedding(x):
-    return elmo(tf.squeeze(tf.cast(x, tf.string)), signature="default", as_dict=True)["default"]
+    return elmo(tf.squeeze(tf.cast(x, tf.string)), signature='default', as_dict=True)['default']
+
 
 ################# MODELS #################
 
-def build_model_0(n_tags):
-
-    input_text = Input(shape=(1,), dtype="string")
+def build_model_0():
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
 
     x = Dense(512, kernel_regularizer=l2(0.001))(embedding)
@@ -47,13 +49,13 @@ def build_model_0(n_tags):
     x = Dense(256, kernel_regularizer=l2(0.001))(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_1(n_tags):
 
-    input_text = Input(shape=(1,), dtype="string")
+def build_model_1():
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
 
     x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
@@ -62,22 +64,21 @@ def build_model_1(n_tags):
     x = Dense(128, kernel_regularizer=l2(0.001))(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_2(n_tags):
+
+def build_model_2():
 
     def residual(x):
-        x_res = x
+        x_res = Dense(256, kernel_regularizer=l2(0.001))(x)
+        x_res = Activation('relu')(x_res)
 
-        x = Dense(256, kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
-
-        x = add([x, x_res])
+        x = add([x_res, x])
         return x
 
-    input_text = Input(shape=(1,), dtype="string")
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
 
     x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
@@ -88,25 +89,24 @@ def build_model_2(n_tags):
     x = Dense(256, kernel_regularizer=l2(0.001))(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_3(n_tags):
+
+def build_model_3():
 
     def residual(x):
-        x_res = x
+        x_res = Dense(256, kernel_regularizer=l2(0.001))(x)
+        x_res = Activation('relu')(x_res)
 
-        x = Dense(256, kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
+        x_res = Dense(256, kernel_regularizer=l2(0.001))(x_res)
+        x_res = Activation('relu')(x_res)
 
-        x = Dense(256, kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
-
-        x = add([x, x_res])
+        x = add([x_res, x])
         return x
 
-    input_text = Input(shape=(1,), dtype="string")
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
 
     x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
@@ -117,22 +117,21 @@ def build_model_3(n_tags):
     x = Dense(256, kernel_regularizer=l2(0.001))(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_4(n_tags):
+
+def build_model_4():
 
     def residual(x):
-        x_res = x
+        x_res = Dense(512, kernel_regularizer=l2(0.001))(x)
+        x_res = Activation('relu')(x_res)
 
-        x = Dense(512, kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
-
-        x = add([x, x_res])
+        x = add([x_res, x])
         return x
 
-    input_text = Input(shape=(1,), dtype="string")
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
 
     x = Dense(512, kernel_regularizer=l2(0.001))(embedding)
@@ -143,13 +142,14 @@ def build_model_4(n_tags):
     x = Dense(256, kernel_regularizer=l2(0.001))(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_5(n_tags):
 
-    input_text = Input(shape=(1,), dtype="string")
+def build_model_5():
+
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
     embedding = Reshape((1024, 1))(embedding)
 
@@ -169,13 +169,14 @@ def build_model_5(n_tags):
     x = Dense(256, kernel_regularizer=l2(0.001))(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_6(n_tags):
 
-    input_text = Input(shape=(1,), dtype="string")
+def build_model_6():
+
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
     embedding = Reshape((1024, 1))(embedding)
 
@@ -195,25 +196,24 @@ def build_model_6(n_tags):
     x = Dense(256, kernel_regularizer=l2(0.001))(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_7(n_tags):
+
+def build_model_7():
 
     def residual(x):
-        x_res = x
+        x_res = Conv1D(64, 5, padding='same', kernel_regularizer=l2(0.001))(x)
+        x_res = Activation('relu')(x_res)
 
-        x = Conv1D(64, 5, padding='same', kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
+        x_res = Conv1D(64, 5, padding='same', kernel_regularizer=l2(0.001))(x_res)
+        x_res = Activation('relu')(x_res)
 
-        x = Conv1D(64, 5, padding='same', kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
-
-        x = add([x, x_res])
+        x = add([x_res, x])
         return x
 
-    input_text = Input(shape=(1,), dtype="string")
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
     embedding = Reshape((1024, 1))(embedding)
 
@@ -228,14 +228,14 @@ def build_model_7(n_tags):
     x = Dense(256, kernel_regularizer=l2(0.001))(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_8(n_tags):
+def build_model_8():
 
-    input_text = Input(shape=(1,), dtype="string")
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
 
     x = Dense(512, kernel_regularizer=l2(0.001))(embedding)
@@ -246,13 +246,14 @@ def build_model_8(n_tags):
     x = Dense(256, kernel_regularizer=l2(0.001))(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_9(n_tags):
 
-    input_text = Input(shape=(1,), dtype="string")
+def build_model_9():
+
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
 
     x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
@@ -264,29 +265,28 @@ def build_model_9(n_tags):
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_10(n_tags):
+
+def build_model_10():
 
     def residual(x):
-        x_res = x
+        x_res = Dense(256, kernel_regularizer=l2(0.001))(x)
+        x_res = BatchNormalization()(x_res)
+        x_res = Activation('relu')(x_res)
+        x_res = Dropout(0.3)(x_res)
 
-        x = Dense(256, kernel_regularizer=l2(0.001))(x)
-        x = BatchNormalization()(x)
-        x = Activation('relu')(x)
-        x = Dropout(0.3)(x)
+        x_res = Dense(256, kernel_regularizer=l2(0.001))(x_res)
+        x_res = BatchNormalization()(x_res)
+        x_res = Activation('relu')(x_res)
+        x_res = Dropout(0.3)(x_res)
 
-        x = Dense(256, kernel_regularizer=l2(0.001))(x)
-        x = BatchNormalization()(x)
-        x = Activation('relu')(x)
-        x = Dropout(0.3)(x)
-
-        x = add([x, x_res])
+        x = add([x_res, x])
         return x
 
-    input_text = Input(shape=(1,), dtype="string")
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
 
     x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
@@ -297,27 +297,26 @@ def build_model_10(n_tags):
     x = Dense(256, kernel_regularizer=l2(0.001))(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_11(n_tags):
+
+def build_model_11():
 
     def residual(x):
-        x_res = x
+        x_res = Dense(256, kernel_regularizer=l2(0.001))(x)
+        x_res = BatchNormalization()(x_res)
+        x_res = Activation('relu')(x_res)
 
-        x = Dense(256, kernel_regularizer=l2(0.001))(x)
-        x = BatchNormalization()(x)
-        x = Activation('relu')(x)
+        x_res = Dense(256, kernel_regularizer=l2(0.001))(x_res)
+        x_res = BatchNormalization()(x_res)
+        x_res = Activation('relu')(x_res)
 
-        x = Dense(256, kernel_regularizer=l2(0.001))(x)
-        x = BatchNormalization()(x)
-        x = Activation('relu')(x)
-
-        x = add([x, x_res])
+        x = add([x_res, x])
         return x
 
-    input_text = Input(shape=(1,), dtype="string")
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
 
     x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
@@ -329,24 +328,23 @@ def build_model_11(n_tags):
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_12(n_tags):
+
+def build_model_12():
 
     def residual(x):
-        x_res = x
+        x_res = Dense(512, kernel_regularizer=l2(0.001))(x)
+        x_res = BatchNormalization()(x_res)
+        x_res = Activation('relu')(x_res)
+        x_res = Dropout(0.5)(x_res)
 
-        x = Dense(512, kernel_regularizer=l2(0.001))(x)
-        x = BatchNormalization()(x)
-        x = Activation('relu')(x)
-        x = Dropout(0.5)(x)
-
-        x = add([x, x_res])
+        x = add([x_res, x])
         return x
 
-    input_text = Input(shape=(1,), dtype="string")
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
 
     x = Dense(512, kernel_regularizer=l2(0.001))(embedding)
@@ -359,23 +357,21 @@ def build_model_12(n_tags):
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_13(n_tags):
+def build_model_13():
 
     def residual(x):
-        x_res = x
+        x_res = Dense(256, kernel_regularizer=l2(0.001))(x)
+        x_res = Activation('relu')(x_res)
 
-        x = Dense(256, kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
-
-        x = add([x, x_res])
+        x = add([x_res, x])
         return x
 
-    input_text = Input(shape=(1,), dtype="string")
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
 
     x = Dense(256, kernel_regularizer=l2(0.001))(embedding)
@@ -386,22 +382,21 @@ def build_model_13(n_tags):
     x = Dense(128, kernel_regularizer=l2(0.001))(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
-def build_model_14(n_tags):
+
+def build_model_14():
 
     def residual(x):
-        x_res = x
+        x_res = Dense(128, kernel_regularizer=l2(0.001))(x)
+        x_res = Activation('relu')(x_res)
 
-        x = Dense(128, kernel_regularizer=l2(0.001))(x)
-        x = Activation('relu')(x)
-
-        x = add([x, x_res])
+        x = add([x_res, x])
         return x
 
-    input_text = Input(shape=(1,), dtype="string")
+    input_text = Input(shape=(1,), dtype='string')
     embedding = Lambda(ELMoEmbedding, output_shape=(1024,))(input_text)
 
     x = Dense(128, kernel_regularizer=l2(0.001))(embedding)
@@ -412,16 +407,17 @@ def build_model_14(n_tags):
     x = Dense(64, kernel_regularizer=l2(0.001))(x)
     x = Activation('relu')(x)
 
-    pred = Dense(n_tags, activation='sigmoid')(x)
+    pred = Dense(2, activation='softmax')(x)
 
     return Model(inputs=[input_text], outputs=pred)
+
 
 ################# UTILS #################
 
 
-def get_input(data_, n_tags, is_test=False):
+def get_input(data_, one_hot=False):
 
-    X = np.array([sentence['sentence'].replace('\n', '').strip().lower()
+    X = np.array([sentence['sentence'].replace('\n', '').strip()
                   for article in data_
                   for sentence in article['sentences']])
 
@@ -429,14 +425,15 @@ def get_input(data_, n_tags, is_test=False):
                   for article in data_
                   for sentence in article['sentences']])
 
-    if not is_test:
-        y = to_categorical(y, num_classes=n_tags)
+    if one_hot:
+        y = to_categorical(y, num_classes=2)
 
     return X, y
 
-def get_scores(model, data_, batch_size, n_tags, results_file, print_out=False):
 
-    X, y_true = get_input(data_, n_tags, True)
+def get_scores(model, data_, batch_size, results_file, print_out=False):
+
+    X, y_true = get_input(data_)
 
     y_preds = model.predict(X, batch_size=batch_size)
     y_preds = np.argmax(y_preds, axis=1)
@@ -456,52 +453,51 @@ def get_scores(model, data_, batch_size, n_tags, results_file, print_out=False):
 
     return sfm
 
+
 ################# MAIN #################
 
 if __name__ == '__main__':
 
     #### INIT PARAMS ####
 
-    n_tags = 2
     batch_size = 32
 
     build_models_functions = {
-#         'model_0': build_model_0(n_tags),
-#         'model_1': build_model_1(n_tags),
-#         'model_2': build_model_2(n_tags),
-#         'model_3': build_model_3(n_tags),
-#         'model_4': build_model_4(n_tags),
-#         'model_5': build_model_5(n_tags),
-#         'model_6': build_model_6(n_tags),
-#         'model_7': build_model_7(n_tags),
-#         'model_8': build_model_8(n_tags),
-#         'model_9': build_model_9(n_tags),
-#         'model_10': build_model_10(n_tags),
-#         'model_11': build_model_11(n_tags),
-#         'model_12': build_model_12(n_tags),
-        
+        'model_0': build_model_0(),
+        'model_1': build_model_1(),
+        'model_2': build_model_2(),
+        'model_3': build_model_3(),
+        'model_4': build_model_4(),
+        'model_5': build_model_5(),
+        'model_6': build_model_6(),
+        'model_7': build_model_7(),
+        'model_8': build_model_8(),
+        'model_9': build_model_9(),
+        'model_10': build_model_10(),
+        'model_11': build_model_11(),
+        'model_12': build_model_12(),
     }
 
     optimizer_configs = [
         {'name': 'adam',
-         'lro': [0.001, 0.005]},#0.01,
-#         {'name': 'adamax',
-#          'lro': [0.01, 0.001]},#0.01,
+         'lro': [0.01, 0.001, 0.005]},
         {'name': 'rmsprop',
-         'lro': [0.001, 0.005]},#0.01,
+         'lro': [0.01, 0.001, 0.005]},
+        # {'name': 'adamax',
+        #  'lro': [0.01, 0.001]},#0.01,
     ]
 
     #### LOAD DATA ####
 
     train_data, valid_data, test_data, _ = load_data()
 
-#     Limit for testing the pipeline
-#     train_data = train_data[:1]
-#     valid_data = valid_data[:1]
-#     test_data = test_data[:1]
+    # Limit for testing the pipeline
+    # train_data = train_data[:1]
+    # valid_data = valid_data[:1]
+    # test_data = test_data[:1]
 
-    X_tra, y_tra = get_input(train_data, n_tags, False)
-    X_val, y_val = get_input(valid_data, n_tags, False)
+    X_tra, y_tra = get_input(train_data, True)
+    X_val, y_val = get_input(valid_data, True)
 
     del train_data
 
@@ -546,10 +542,12 @@ if __name__ == '__main__':
 
                 model_name = 'Optimized_RQ1_elmo' + \
                              '_' + fname + \
-                             '_' + optimizer_name +  \
-                             '_lr_' + str(lr) +  \
+                             '_' + optimizer_name + \
+                             '_lr_' + str(lr) + \
                              '_lrreduction' + \
-                             '_loss_' + loss
+                             '_loss_' + loss + \
+                             '_onehot' + \
+                             '_softmax'
 
                 model_main = './Model/' + model_name.split('model')[0] + 'model/'
                 model_dir = os.path.join(model_main, model_name)
@@ -575,21 +573,21 @@ if __name__ == '__main__':
                           ])
 
                 best_model = load_model(os.path.join(model_dir, model_name + '_best_f1_macro_model.h5'),
-                                        custom_objects={'elmo':elmo, 'tf':tf,
-                                                        'f1_macro':f1_macro,
-                                                        'f1_micro':f1_micro})
+                                        custom_objects={'elmo': elmo, 'tf': tf,
+                                                        'f1_macro': f1_macro,
+                                                        'f1_micro': f1_micro})
 
                 print("Evaluating the model...")
 
                 with open(results_file, 'w') as f:
                     f.write('\n---------------- Validation ----------------\n')
 
-                val_f1 = get_scores(best_model, valid_data, batch_size, n_tags, results_file)
+                val_f1 = get_scores(best_model, valid_data, batch_size, results_file)
 
                 with open(results_file, 'a') as f:
                     f.write('\n---------------- Test ----------------\n')
 
-                test_f1 = get_scores(best_model, test_data, batch_size, n_tags, results_file)
+                test_f1 = get_scores(best_model, test_data, batch_size, results_file)
 
                 if not os.path.exists(score_file):
                     with open(score_file, 'w') as scrf:
