@@ -30,6 +30,9 @@ from src.load_data import load_data
 sess = tf.compat.v1.Session()
 K.set_session(sess)
 
+with tf.device("gpu:0"):
+    print("GPU enabled")
+
 os.environ["TFHUB_CACHE_DIR"] = '/tmp/tfhub'
 
 elmo = hub.Module('https://tfhub.dev/google/elmo/3', trainable=True)
@@ -319,7 +322,7 @@ def build_model_13(ww):
 ################# UTILS #################
 
 
-def get_input(data_, ww, batch_size, one_hot=False, limit=None):
+def get_input(data_, ww, one_hot=False):
 
     def normalize(text):
         return text.replace('\n', '').strip()
@@ -362,18 +365,12 @@ def get_input(data_, ww, batch_size, one_hot=False, limit=None):
 
             y.append(label_)
 
-    # limit data if not an even number when batch_size=2
-    # if not limit:
-    #     limit = len(X) if len(X)%batch_size == 0 else len(X)-len(X)%batch_size
-    # X = X[:limit]
-    # y = y[:limit]
-
     return np.array(X), np.array(y)
 
 
 def get_scores(model, data_, batch_size, ww, results_file, print_out=False):
 
-    X, y_true = get_input(data_, ww, batch_size, one_hot=False, limit=None)
+    X, y_true = get_input(data_, ww, one_hot=False)
 
     y_preds = model.predict(X, batch_size=batch_size)
     y_preds = np.argmax(y_preds, axis=1)
@@ -424,8 +421,8 @@ if __name__ == '__main__':
     # valid_data = valid_data[:4]
     # test_data = test_data[:4]
 
-    X_tra, y_tra = get_input(train_data, ww, batch_size, one_hot=True, limit=None)
-    X_val, y_val = get_input(valid_data, ww, batch_size, one_hot=True, limit=None)
+    X_tra, y_tra = get_input(train_data, ww, one_hot=True)
+    X_val, y_val = get_input(valid_data, ww, one_hot=True)
 
     del train_data
 

@@ -23,15 +23,15 @@ python rq2_elmo_auto_optimizer_many_to_one.py 1 rmsprop 0.001
 python rq2_elmo_auto_optimizer_many_to_one.py 2 rmsprop 0.001
 python rq2_elmo_auto_optimizer_many_to_one.py 3 rmsprop 0.001
 python rq2_elmo_auto_optimizer_many_to_one.py 4 rmsprop 0.001
-#python rq2_elmo_auto_optimizer_many_to_one.py 5 rmsprop 0.001
-#python rq2_elmo_auto_optimizer_many_to_one.py 6 rmsprop 0.001
-#python rq2_elmo_auto_optimizer_many_to_one.py 7 rmsprop 0.001
-#python rq2_elmo_auto_optimizer_many_to_one.py 8 rmsprop 0.001
-#python rq2_elmo_auto_optimizer_many_to_one.py 9 rmsprop 0.001
-#python rq2_elmo_auto_optimizer_many_to_one.py 10 rmsprop 0.001
-#python rq2_elmo_auto_optimizer_many_to_one.py 11 rmsprop 0.001
-#python rq2_elmo_auto_optimizer_many_to_one.py 12 rmsprop 0.001
-#python rq2_elmo_auto_optimizer_many_to_one.py 13 rmsprop 0.001
+python rq2_elmo_auto_optimizer_many_to_one.py 5 rmsprop 0.001
+python rq2_elmo_auto_optimizer_many_to_one.py 6 rmsprop 0.001
+python rq2_elmo_auto_optimizer_many_to_one.py 7 rmsprop 0.001
+python rq2_elmo_auto_optimizer_many_to_one.py 8 rmsprop 0.001
+python rq2_elmo_auto_optimizer_many_to_one.py 9 rmsprop 0.001
+python rq2_elmo_auto_optimizer_many_to_one.py 10 rmsprop 0.001
+python rq2_elmo_auto_optimizer_many_to_one.py 11 rmsprop 0.001
+python rq2_elmo_auto_optimizer_many_to_one.py 12 rmsprop 0.001
+python rq2_elmo_auto_optimizer_many_to_one.py 13 rmsprop 0.001
 
 ##### adam & lr = 0.0005 #####
 

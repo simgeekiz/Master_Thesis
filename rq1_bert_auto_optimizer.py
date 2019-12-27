@@ -306,7 +306,7 @@ def get_input(data_, max_seq_length, one_hot=False):
 
 def get_scores(model, data_, batch_size, max_seq_length, results_file=None, print_out=False):
 
-    X, y_true = get_input(data_, max_seq_length)
+    X, y_true = get_input(data_, max_seq_length, one_hot=False)
     y_true = [y[0] for y in y_true]
 
     y_preds = model.predict(X, batch_size=batch_size)
@@ -365,8 +365,8 @@ if __name__ == '__main__':
     # valid_data = valid_data[:1]
     # test_data = test_data[:1]
 
-    X_tra, y_tra = get_input(train_data, max_seq_length, True)
-    X_val, y_val = get_input(valid_data, max_seq_length, True)
+    X_tra, y_tra = get_input(train_data, max_seq_length, one_hot=True)
+    X_val, y_val = get_input(valid_data, max_seq_length, one_hot=True)
 
     del train_data
 

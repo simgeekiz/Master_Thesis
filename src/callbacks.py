@@ -9,6 +9,7 @@ from tensorflow.keras.models import save_model
 class PlotCurves(KerasCallback):
 
     def __init__(self, model_name, model_dir=None, save_epochs=False, plt_show=True, jnote=False):
+        super().__init__()
         self.model_name = model_name
         self.save_epochs = save_epochs
         self.plt_show = plt_show
@@ -103,29 +104,31 @@ class PlotCurves(KerasCallback):
 
         if self.jnote:
             display.clear_output(wait=True)
-        plt.plot(self.x, self.losses, label="loss")
-        plt.plot(self.x, self.val_losses, label="val_loss")
-        plt.plot(self.x, self.acc, label="acc")
-        plt.plot(self.x, self.val_acc, label="val_acc")
-        plt.plot(self.x, self.f1_macro, label="f1_macro")
-        plt.plot(self.x, self.val_f1_macro, label="val_f1_macro")
-        plt.plot(self.x, self.f1_micro, label="f1_micro")
-        plt.plot(self.x, self.val_f1_micro, label="val_f1_micro")
-        plt.legend()
-        plt.title('Best validation accuracy = {:.2f}% on epoch {} of {} \n' \
-                  'Best validation F1-macro = {:.2f}% on epoch {} of {} \n' \
-                  'Best validation F1-micro = {:.2f}% on epoch {} of {} \n'.format(
-                        100. * self.best_val_acc, self.best_acc_epoch, self.epoch,
-                        100. * self.best_val_f1_macro, self.best_f1_macro_epoch, self.epoch,
-                        100. * self.best_val_f1_micro, self.best_f1_micro_epoch, self.epoch))
-        plt.savefig(os.path.join(self.model_dir, self.model_name + '.png'))
-        if self.plt_show:
-            plt.show();
-        plt.close();
+        if self.epoch > 9:
+            plt.plot(self.x, self.losses, label="loss")
+            plt.plot(self.x, self.val_losses, label="val_loss")
+            plt.plot(self.x, self.acc, label="acc")
+            plt.plot(self.x, self.val_acc, label="val_acc")
+            plt.plot(self.x, self.f1_macro, label="f1_macro")
+            plt.plot(self.x, self.val_f1_macro, label="val_f1_macro")
+            plt.plot(self.x, self.f1_micro, label="f1_micro")
+            plt.plot(self.x, self.val_f1_micro, label="val_f1_micro")
+            plt.legend()
+            plt.title(('Best validation accuracy = {:.2f}% on epoch {} of {} \n'
+                       'Best validation F1-macro = {:.2f}% on epoch {} of {} \n'
+                       'Best validation F1-micro = {:.2f}% on epoch {} of {} \n').format(
+                            100. * self.best_val_acc, self.best_acc_epoch, self.epoch,
+                            100. * self.best_val_f1_macro, self.best_f1_macro_epoch, self.epoch,
+                            100. * self.best_val_f1_micro, self.best_f1_micro_epoch, self.epoch))
+            plt.savefig(os.path.join(self.model_dir, self.model_name + '.png'))
+            if self.plt_show:
+                plt.show()
+            plt.close()
 
 class PlotCurvesTF(TensorflowCallback):
 
     def __init__(self, model_name, model_dir=None, save_epochs=False, plt_show=True, jnote=True):
+        super().__init__()
         self.model_name = model_name
         self.save_epochs = save_epochs
         self.plt_show = plt_show
@@ -200,7 +203,7 @@ class PlotCurvesTF(TensorflowCallback):
             self.best_acc_epoch = self.epoch
 
         # (Possibly) update best validation F1-macro
-        if self.val_f1_macro[-1] > self.best_val_f1_macro:
+        if self.val_f1_macro[-1] > self.best_val_f1_macro or epoch == 1:
             self.best_val_f1_macro = self.val_f1_macro[-1]
             self.best_f1_macro_epoch = self.epoch
             save_model(self.model, os.path.join(self.model_dir, self.model_name + '_best_f1_macro_model.h5'),
@@ -232,13 +235,13 @@ class PlotCurvesTF(TensorflowCallback):
             plt.plot(self.x, self.f1_micro, label="f1_micro")
             plt.plot(self.x, self.val_f1_micro, label="val_f1_micro")
             plt.legend()
-            plt.title('Best validation accuracy = {:.2f}% on epoch {} of {} \n' \
-                      'Best validation F1-macro = {:.2f}% on epoch {} of {} \n' \
-                      'Best validation F1-micro = {:.2f}% on epoch {} of {} \n'.format(
+            plt.title(('Best validation accuracy = {:.2f}% on epoch {} of {} \n'
+                       'Best validation F1-macro = {:.2f}% on epoch {} of {} \n'
+                       'Best validation F1-micro = {:.2f}% on epoch {} of {} \n').format(
                             100. * self.best_val_acc, self.best_acc_epoch, self.epoch,
                             100. * self.best_val_f1_macro, self.best_f1_macro_epoch, self.epoch,
                             100. * self.best_val_f1_micro, self.best_f1_micro_epoch, self.epoch))
             plt.savefig(os.path.join(self.model_dir, self.model_name + '.png'))
             if self.plt_show:
-                plt.show();
-            plt.close();
+                plt.show()
+            plt.close()

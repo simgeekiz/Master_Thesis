@@ -28,6 +28,9 @@ from src.load_data import load_data
 sess = tf.compat.v1.Session()
 K.set_session(sess)
 
+with tf.device("gpu:0"):
+    print("GPU enabled")
+
 os.environ["TFHUB_CACHE_DIR"] = '/tmp/tfhub'
 
 elmo = hub.Module('https://tfhub.dev/google/elmo/3', trainable=True)
@@ -433,7 +436,7 @@ def get_input(data_, one_hot=False):
 
 def get_scores(model, data_, batch_size, results_file, print_out=False):
 
-    X, y_true = get_input(data_)
+    X, y_true = get_input(data_, one_hot=False)
 
     y_preds = model.predict(X, batch_size=batch_size)
     y_preds = np.argmax(y_preds, axis=1)
@@ -496,8 +499,8 @@ if __name__ == '__main__':
     # valid_data = valid_data[:1]
     # test_data = test_data[:1]
 
-    X_tra, y_tra = get_input(train_data, True)
-    X_val, y_val = get_input(valid_data, True)
+    X_tra, y_tra = get_input(train_data, one_hot=True)
+    X_val, y_val = get_input(valid_data, one_hot=True)
 
     del train_data
 
