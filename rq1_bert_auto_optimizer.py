@@ -6,8 +6,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, Activation, Conv1D, \
-    MaxPooling1D, Flatten, Reshape, \
-    BatchNormalization, Dropout, add
+                                    MaxPooling1D, Flatten, Reshape, \
+                                    BatchNormalization, Dropout, add
 from tensorflow.keras.optimizers import RMSprop, Adam, Adamax
 from tensorflow.keras.regularizers import l2
 
@@ -17,10 +17,10 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import f1_score as scikit_f1_score
 
 from src.keras_bert import convert_text_to_examples, \
-    create_tokenizer_from_hub_module, \
-    convert_examples_to_features, \
-    initialize_vars, \
-    BertLayer
+                           create_tokenizer_from_hub_module, \
+                           convert_examples_to_features, \
+                           initialize_vars, \
+                           BertLayer
 
 # Custom
 from src.callbacks import PlotCurvesTF as PlotCurves

@@ -8,9 +8,8 @@ import tensorflow_hub as hub
 from keras import backend as K
 from keras.models import Model, Input, load_model
 from keras.layers import LSTM, Dense, TimeDistributed, Bidirectional, Lambda, \
-    Activation, CuDNNLSTM, SpatialDropout1D, Dropout, BatchNormalization, \
-    GlobalAveragePooling1D, GlobalMaxPooling1D
-from keras.optimizers import RMSprop, Adam, Adamax, SGD
+                         Activation, CuDNNLSTM, Dropout
+from keras.optimizers import RMSprop, Adam, Adamax
 from keras.callbacks import ReduceLROnPlateau, EarlyStopping
 from keras.regularizers import l2
 from keras.layers.merge import add

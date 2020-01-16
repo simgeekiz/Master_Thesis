@@ -8,6 +8,8 @@ class AttentionLayer(Layer):
     """
     This class implements Bahdanau attention (https://arxiv.org/pdf/1409.0473.pdf).
     There are three sets of weights introduced W_a, U_a, and V_a
+
+    Taken from: https://github.com/thushv89/attention_keras
      """
 
     def __init__(self, **kwargs):

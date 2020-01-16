@@ -168,17 +168,22 @@ class BertLayer(tf.keras.layers.Layer):
         n_fine_tune_layers=10,
         pooling="mean",
         bert_path="https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1",
+        max_sequence_length=512,
         **kwargs,
     ):
         self.n_fine_tune_layers = n_fine_tune_layers
         self.trainable = True
-        self.output_size = 768
         self.pooling = pooling
         self.bert_path = bert_path
-        if self.pooling not in ["first", "mean"]:
+        self.max_sequence_length = max_sequence_length
+        if self.pooling not in ["first", "mean", "none"]:
             raise NameError(
                 f"Undefined pooling type (must be either first or mean, but is {self.pooling}"
             )
+        if self.pooling == "none":
+            self.output_size = (self.max_sequence_length, 768)
+        else:
+            self.output_size = 768
 
         super(BertLayer, self).__init__(**kwargs)
 
@@ -193,7 +198,7 @@ class BertLayer(tf.keras.layers.Layer):
             trainable_vars = [var for var in trainable_vars if not "/cls/" in var.name]
             trainable_layers = ["pooler/dense"]
 
-        elif self.pooling == "mean":
+        elif self.pooling in ["mean", "none"]:
             trainable_vars = [
                 var
                 for var in trainable_vars
@@ -233,26 +238,28 @@ class BertLayer(tf.keras.layers.Layer):
             input_ids=input_ids, input_mask=input_mask, segment_ids=segment_ids
         )
         if self.pooling == "first":
-            pooled = self.bert(inputs=bert_inputs, signature="tokens", as_dict=True)[
-                "pooled_output"
-            ]
+            pooled = self.bert(inputs=bert_inputs, signature="tokens", as_dict=True)["pooled_output"]
         elif self.pooling == "mean":
-            result = self.bert(inputs=bert_inputs, signature="tokens", as_dict=True)[
-                "sequence_output"
-            ]
+            result = self.bert(inputs=bert_inputs, signature="tokens", as_dict=True)["sequence_output"]
 
+            # masked average/mean pooling
             mul_mask = lambda x, m: x * tf.expand_dims(m, axis=-1)
             masked_reduce_mean = lambda x, m: tf.reduce_sum(mul_mask(x, m), axis=1) / (
                                  tf.reduce_sum(m, axis=1, keepdims=True) + 1e-10)
             input_mask = tf.cast(input_mask, tf.float32)
             pooled = masked_reduce_mean(result, input_mask)
+        elif self.pooling == "none":
+            pooled = self.bert(inputs=bert_inputs, signature="tokens", as_dict=True)["sequence_output"]
         else:
             raise NameError(f"Undefined pooling type (must be either first or mean, but is {self.pooling}")
 
         return pooled
 
     def compute_output_shape(self, input_shape):
-        return (input_shape[0], self.output_size)
+        if self.pooling == "none":
+            return (input_shape[0], self.max_sequence_length, 768)
+        else:
+            return (input_shape[0], self.output_size)
 
 
 # Build model

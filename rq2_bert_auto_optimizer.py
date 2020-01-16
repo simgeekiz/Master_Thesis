@@ -7,7 +7,7 @@ import tensorflow_hub as hub
 
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, Lambda, Activation, Bidirectional, \
-                                    Dropout, LSTM, add
+                                    Dropout, LSTM, TimeDistributed, add
 from tensorflow.keras.optimizers import RMSprop, Adam, Adamax
 from tensorflow.keras.regularizers import l2
 
@@ -37,7 +37,7 @@ bert_path = "https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1"
 
 bert = hub.Module(bert_path, trainable=True)
 
-ww = 1
+max_len = 58
 max_seq_length = 512
 if max_seq_length > 512:
     print('!!!!!!! WARNING: BERT does not accept length > 512. It is set to 512.')
@@ -45,7 +45,7 @@ if max_seq_length > 512:
 
 def BERTEmbeddingStack(x):
     embeds = []
-    for art in tf.unstack(tf.reshape(x, (batch_size, 3, 2*ww+1, max_seq_length))):
+    for art in tf.unstack(tf.reshape(x, (batch_size, 3, max_len, max_seq_length))):
         art = tf.cast(art, dtype="int32")
         # Below does not change the shape of segment_ids etc.
         # Only puts them into a dictionary
@@ -68,185 +68,174 @@ def BERTEmbeddingStack(x):
 ################# MODELS #################
 
 
-def build_model_0(ww, max_seq_length):
+def build_model_0(max_len, max_seq_length):
 
-    inp_size = 2 * ww + 1
-    input_text = Input(shape=(3, inp_size, max_seq_length))
+    input_text = Input(shape=(3, max_len, max_seq_length))
 
-    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, max_len, 768))(input_text)
 
     x = Bidirectional(LSTM(units=256, return_sequences=True))(bert_output)
 
-    pred = LSTM(1, activation='sigmoid')(x)
+    pred = TimeDistributed(Dense(1, activation='sigmoid'))(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_1(ww, max_seq_length):
+def build_model_1(max_len, max_seq_length):
 
-    inp_size = 2 * ww + 1
-    input_text = Input(shape=(3, inp_size, max_seq_length))
+    input_text = Input(shape=(3, max_len, max_seq_length))
 
-    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, max_len, 768))(input_text)
 
     x = Bidirectional(LSTM(units=128, return_sequences=True))(bert_output)
 
-    pred = LSTM(1, activation='sigmoid')(x)
+    pred = TimeDistributed(Dense(1, activation='sigmoid'))(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_2(ww, max_seq_length):
+def build_model_2(max_len, max_seq_length):
 
-    inp_size = 2 * ww + 1
-    input_text = Input(shape=(3, inp_size, max_seq_length))
+    input_text = Input(shape=(3, max_len, max_seq_length))
 
-    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, max_len, 768))(input_text)
 
     x = Bidirectional(LSTM(units=256, return_sequences=True))(bert_output)
     x = Dropout(0.4)(x)
 
-    pred = LSTM(1, activation='sigmoid')(x)
+    pred = TimeDistributed(Dense(1, activation='sigmoid'))(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_3(ww, max_seq_length):
+def build_model_3(max_len, max_seq_length):
 
-    inp_size = 2 * ww + 1
-    input_text = Input(shape=(3, inp_size, max_seq_length))
+    input_text = Input(shape=(3, max_len, max_seq_length))
 
-    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, max_len, 768))(input_text)
 
     x = Dense(256, kernel_regularizer=l2(0.001))(bert_output)
     x = Activation('relu')(x)
 
     x = Bidirectional(LSTM(units=128, return_sequences=True))(x)
 
-    pred = LSTM(1, activation='sigmoid')(x)
+    pred = TimeDistributed(Dense(1, activation='sigmoid'))(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_4(ww, max_seq_length):
+def build_model_4(max_len, max_seq_length):
 
-    inp_size = 2 * ww + 1
-    input_text = Input(shape=(3, inp_size, max_seq_length))
+    input_text = Input(shape=(3, max_len, max_seq_length))
 
-    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, max_len, 768))(input_text)
 
     x = Dense(256, kernel_regularizer=l2(0.001))(bert_output)
     x = Activation('relu')(x)
 
     x = Bidirectional(LSTM(units=128, return_sequences=True, recurrent_dropout=0.2, dropout=0.2))(x)
 
-    pred = LSTM(1, activation='sigmoid')(x)
+    pred = TimeDistributed(Dense(1, activation='sigmoid'))(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_5(ww, max_seq_length):
+def build_model_5(max_len, max_seq_length):
 
-    inp_size = 2 * ww + 1
-    input_text = Input(shape=(3, inp_size, max_seq_length))
+    input_text = Input(shape=(3, max_len, max_seq_length))
 
-    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, max_len, 768))(input_text)
 
     x = Bidirectional(LSTM(units=128, return_sequences=True))(bert_output)
     x = Dropout(0.4)(x)
 
     x = Bidirectional(LSTM(units=128, return_sequences=True))(x)
 
-    pred = LSTM(1, activation='sigmoid')(x)
+    pred = TimeDistributed(Dense(1, activation='sigmoid'))(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_6(ww):
+def build_model_6(max_len, max_seq_length):
 
-    inp_size = 2 * ww + 1
-    input_text = Input(shape=(3, inp_size, max_seq_length))
+    input_text = Input(shape=(3, max_len, max_seq_length))
 
-    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, max_len, 768))(input_text)
 
     x = Bidirectional(LSTM(units=256, return_sequences=True))(bert_output)
     x = Dropout(0.4)(x)
 
     x = Bidirectional(LSTM(units=128, return_sequences=True))(x)
 
-    pred = LSTM(1, activation='sigmoid')(x)
+    pred = TimeDistributed(Dense(1, activation='sigmoid'))(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_7(ww):
+def build_model_7(max_len, max_seq_length):
 
-    inp_size = 2 * ww + 1
-    input_text = Input(shape=(3, inp_size, max_seq_length))
+    input_text = Input(shape=(3, max_len, max_seq_length))
 
-    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, max_len, 768))(input_text)
 
     x = Bidirectional(LSTM(units=128, return_sequences=True))(bert_output)
     x = Bidirectional(LSTM(units=128, return_sequences=True))(x)
 
-    pred = LSTM(1, activation='sigmoid')(x)
+    pred = TimeDistributed(Dense(1, activation='sigmoid'))(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_8(ww, max_seq_length):
+def build_model_8(max_len, max_seq_length):
 
     def residual(x):
         x_res = Bidirectional(LSTM(units=128, return_sequences=True))(x)
         x = add([x_res, x])
         return x
 
-    inp_size = 2 * ww + 1
-    input_text = Input(shape=(3, inp_size, max_seq_length))
+    input_text = Input(shape=(3, max_len, max_seq_length))
 
-    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, max_len, 768))(input_text)
 
     x = Bidirectional(LSTM(units=128, return_sequences=True))(bert_output)
 
     x = residual(x)
 
-    pred = LSTM(1, activation='sigmoid')(x)
+    pred = TimeDistributed(Dense(1, activation='sigmoid'))(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_9(ww, max_seq_length):
+def build_model_9(max_len, max_seq_length):
 
     def residual(x):
         x_res = Bidirectional(LSTM(units=256, return_sequences=True))(x)
         x = add([x_res, x])
         return x
 
-    inp_size = 2 * ww + 1
-    input_text = Input(shape=(3, inp_size, max_seq_length))
+    input_text = Input(shape=(3, max_len, max_seq_length))
 
-    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, max_len, 768))(input_text)
 
     x = Bidirectional(LSTM(units=256, return_sequences=True))(bert_output)
 
     x = residual(x)
 
-    pred = LSTM(1, activation='sigmoid')(x)
+    pred = TimeDistributed(Dense(1, activation='sigmoid'))(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_10(ww, max_seq_length):
+def build_model_10(max_len, max_seq_length):
 
     def residual(x):
-        x_res = Bidirectional(LSTM(units=256, return_sequences=True))(x)
+        x_res= Bidirectional(LSTM(units=256, return_sequences=True))(x)
         x = add([x_res, x])
         return x
 
-    inp_size = 2 * ww + 1
-    input_text = Input(shape=(3, inp_size, max_seq_length))
+    input_text = Input(shape=(3, max_len, max_seq_length))
 
-    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, max_len, 768))(input_text)
 
     x = Bidirectional(LSTM(units=256, return_sequences=True))(bert_output)
 
@@ -254,22 +243,21 @@ def build_model_10(ww, max_seq_length):
 
     x = Dropout(0.4)(x)
 
-    pred = LSTM(1, activation='sigmoid')(x)
+    pred = TimeDistributed(Dense(1, activation='sigmoid'))(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_11(ww, max_seq_length):
+def build_model_11(max_len, max_seq_length):
 
     def residual(x):
         x_res = Bidirectional(LSTM(units=128, return_sequences=True))(x)
         x = add([x_res, x])
         return x
 
-    inp_size = 2 * ww + 1
-    input_text = Input(shape=(3, inp_size, max_seq_length))
+    input_text = Input(shape=(3, max_len, max_seq_length))
 
-    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, max_len, 768))(input_text)
 
     x = Dense(256, kernel_regularizer=l2(0.001))(bert_output)
     x = Activation('relu')(x)
@@ -278,61 +266,59 @@ def build_model_11(ww, max_seq_length):
 
     x = residual(x)
 
-    pred = LSTM(1, activation='sigmoid')(x)
+    pred = TimeDistributed(Dense(1, activation='sigmoid'))(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_12(ww, max_seq_length):
+def build_model_12(max_len, max_seq_length):
 
     def residual(x):
         x_res = Bidirectional(LSTM(units=256, return_sequences=True))(x)
         x = add([x_res, x])
         return x
 
-    inp_size = 2 * ww + 1
-    input_text = Input(shape=(3, inp_size, max_seq_length))
+    input_text = Input(shape=(3, max_len, max_seq_length))
 
-    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, max_len, 768))(input_text)
 
     x = Dense(256, kernel_regularizer=l2(0.001))(bert_output)
     x = Activation('relu')(x)
 
     x = Bidirectional(LSTM(units=256, return_sequences=True))(x)
+
     x = residual(x)
 
-    pred = LSTM(1, activation='sigmoid')(x)
+    pred = TimeDistributed(Dense(1, activation='sigmoid'))(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 
-def build_model_13(ww, max_seq_length):
+def build_model_13(max_len, max_seq_length):
 
     def residual(x):
         x_res = Bidirectional(LSTM(units=128, return_sequences=True, recurrent_dropout=0.2, dropout=0.2))(x)
         x = add([x_res, x])
         return x
 
-    inp_size = 2 * ww + 1
-    input_text = Input(shape=(3, inp_size, max_seq_length))
+    input_text = Input(shape=(3, max_len, max_seq_length))
 
-    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, inp_size, 768))(input_text)
+    bert_output = Lambda(BERTEmbeddingStack, output_shape=(None, None, max_len, 768))(input_text)
 
-    x = Dense(256, kernel_regularizer=l2(0.001))(bert_output)
+    x = Dense(256, activation='relu')(bert_output)
     x = Activation('relu')(x)
 
-    x = Bidirectional(LSTM(units=128, return_sequences=True,
-                           recurrent_dropout=0.2, dropout=0.2))(x)
+    x = Bidirectional(LSTM(units=128, return_sequences=True, recurrent_dropout=0.2, dropout=0.2))(x)
 
     x = residual(x)
 
-    pred = LSTM(1, activation='sigmoid')(x)
+    pred = TimeDistributed(Dense(1, activation='sigmoid'))(x)
 
     return Model(inputs=[input_text], outputs=pred)
 
 ################# UTILS #################
 
-
+#
 # def get_padding_sentence(max_seq_length, tokenizer, padding_text='ENDPAD'):
 #     """Deprecated"""
 #
@@ -344,7 +330,7 @@ def build_model_13(ww, max_seq_length):
 #     return {"input_ids": input_ids, "input_mask": input_mask, "segment_ids": segment_ids, "label": 0}
 
 
-def get_input(data_, ww, max_seq_length):
+def get_input(data_, max_len, max_seq_length):
 
     tokenizer = create_tokenizer_from_hub_module(bert_path)
 
@@ -354,6 +340,11 @@ def get_input(data_, ww, max_seq_length):
     X = []
     y = []
     for article in data_:
+
+        input_ids_seq = []
+        input_mask_seq = []
+        segment_ids_seq = []
+        y_seq = []
 
         X_art = np.array([[" ".join(sentence['sentence'].replace('\n', ' ').strip().split()[0:max_seq_length])]
                           for sentence in article['sentences']], dtype=object)
@@ -365,68 +356,46 @@ def get_input(data_, ww, max_seq_length):
         (input_ids, input_masks, segment_ids, labels_) = \
             convert_examples_to_features(tokenizer, examples_, max_seq_length=max_seq_length)
 
-        for si, _ in enumerate(article['sentences']):
+        for i in range(max_len):
 
-            input_ids_seq = []
-            input_mask_seq = []
-            segment_ids_seq = []
-            y_seq = []
+            if i < len(article['sentences']):
+                input_ids_seq.append(input_ids[i])
+                input_mask_seq.append(input_masks[i])
+                segment_ids_seq.append(segment_ids[i])
+                y_seq.append(labels_[i])
 
-            # Prev
-            for i in reversed(range(ww)):
+            else:
+                input_ids_seq.append(padding_sent['input_ids'])
+                input_mask_seq.append(padding_sent['input_mask'])
+                segment_ids_seq.append(padding_sent['segment_ids'])
+                y_seq.append([0])
 
-                if si - i - 1 >= 0:
-                    sent_obj_prev = {"input_ids": input_ids[si - i - 1],
-                                     "input_mask": input_masks[si - i - 1],
-                                     "segment_ids": segment_ids[si - i - 1]}
-                else:
-                    sent_obj_prev = padding_sent
+        X_seq = (np.array(input_ids_seq),
+                 np.array(input_mask_seq),
+                 np.array(segment_ids_seq))
 
-                input_ids_seq.append(sent_obj_prev['input_ids'])
-                input_mask_seq.append(sent_obj_prev['input_mask'])
-                segment_ids_seq.append(sent_obj_prev['segment_ids'])
+        X.append(X_seq)
+        y.append(y_seq)
 
-            # Curr
-            sent_obj = {"input_ids": input_ids[si],
-                        "input_mask": input_masks[si],
-                        "segment_ids": segment_ids[si]}
-
-            input_ids_seq.append(sent_obj['input_ids'])
-            input_mask_seq.append(sent_obj['input_mask'])
-            segment_ids_seq.append(sent_obj['segment_ids'])
-            y_seq.append(labels_[si][0])
-
-            # Next
-            for i in range(ww):
-
-                if si + i + 1 < len(article['sentences']):
-                    sent_obj_next = {"input_ids": input_ids[si + i + 1],
-                                     "input_mask": input_masks[si + i + 1],
-                                     "segment_ids": segment_ids[si + i + 1]}
-                else:
-                    sent_obj_next = padding_sent
-
-                input_ids_seq.append(sent_obj_next['input_ids'])
-                input_mask_seq.append(sent_obj_next['input_mask'])
-                segment_ids_seq.append(sent_obj_next['segment_ids'])
-
-            X_seq = (np.array(input_ids_seq),
-                     np.array(input_mask_seq),
-                     np.array(segment_ids_seq))
-
-            X.append(X_seq)
-            y.append(y_seq)
-
-    return np.array(X), np.array(y)
+    return np.array(X), np.array(y), padding_sent
 
 
-def get_scores(model, batch_size, ww, max_seq_length, data_=None, X=None, y_true=None, results_file=None, print_out=False):
+def get_scores(model, data_, batch_size, max_len, max_seq_length, results_file=None, print_out=False):
 
-    if data_:
-        X, y_true = get_input(data_, ww, max_seq_length, batch_size, limit=None)
+    def unpad(X, y_preds, padding_sent):
+        y_unpad = []
+        for ai, art in enumerate(X):
+            for si, sen_inp_ids in enumerate(art[0]):
+                if list(sen_inp_ids) != list(padding_sent['input_ids']):
+                    y_unpad.append(y_preds[ai][si])
+        return y_unpad
+
+    X, y_true, padding_sent = get_input(data_, max_len, max_seq_length)
+    y_true = unpad(X, y_true, padding_sent)
     y_true = [y[0] for y in y_true]
 
     y_preds = model.predict(X, batch_size=batch_size)
+    y_preds = unpad(X, y_preds, padding_sent)
     y_preds = [0 if y[0] < 0.5 else 1 for y in y_preds]
 
     clsrpt = classification_report(y_true, y_preds)
@@ -442,7 +411,6 @@ def get_scores(model, batch_size, ww, max_seq_length, data_=None, X=None, y_true
         with open(results_file, 'a') as f:
             f.write('\n' + clsrpt + '\nF1_Macro: ' + str(sfm) + '\nF1_1: ' + str(sf1) + '\n\n')
     return sfm
-
 
 ################# MAIN #################
 
@@ -470,25 +438,21 @@ if __name__ == '__main__':
     #### LOAD DATA ####
 
     train_data, valid_data, test_data, _ = load_data()
-    for a, article in enumerate(valid_data):
-        for s, sent in enumerate(article['sentences']):
-            lent = len(sent['sentence'].split())
-            if lent > 90:
-                del valid_data[a]['sentences'][s]
+    train_data = [art for art in train_data if len(art['sentences']) > 1]
 
     # Limit for testing the pipeline
     # train_data = train_data[:1]
     # valid_data = valid_data[:1]
     # test_data = test_data[:1]
 
-    X_tra, y_tra = get_input(train_data, ww, max_seq_length, batch_size, limit=None)
-    X_val, y_val = get_input(valid_data, ww, max_seq_length, batch_size, limit=None)
+    X_tra, y_tra, _ = get_input(train_data, max_len, max_seq_length)
+    X_val, y_val, _ = get_input(valid_data, max_len, max_seq_length)
 
     del train_data
 
     #### CONFIGURE MODEL ####
 
-    model = getattr(sys.modules[__name__], 'build_model_' + model_no)(ww, max_seq_length=max_seq_length)
+    model = getattr(sys.modules[__name__], 'build_model_' + model_no)(max_len, max_seq_length=max_seq_length)
 
     if optimizer_name == 'adam':
         optimizer = Adam(lr=lr)
@@ -505,9 +469,9 @@ if __name__ == '__main__':
 
     model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
-    model_name = 'Optimized_RQ2_bert_many_to_one' + \
+    model_name = 'Optimized_RQ2_bert' + \
                  '_model_' + model_no + \
-                 '_ww_' + str(ww) + \
+                 '_maxlen_' + str(max_len) + \
                  '_' + optimizer_name + \
                  '_lr_' + str(lr) + \
                  '_epochs_' + str(epochs) + \
@@ -538,12 +502,12 @@ if __name__ == '__main__':
     with open(results_file, 'w') as f:
         f.write('\n---------------- Validation ----------------\n')
 
-    val_f1 = get_scores(model, batch_size, ww, max_seq_length, X=X_val, y_true=y_val, results_file=results_file)
+    val_f1 = get_scores(model, valid_data, batch_size, max_len, max_seq_length, results_file=results_file)
 
     with open(results_file, 'a') as f:
         f.write('\n---------------- Test ----------------\n')
 
-    test_f1 = get_scores(model, batch_size, ww, max_seq_length, data_=test_data, results_file=results_file)
+    test_f1 = get_scores(model, test_data, batch_size, max_len, max_seq_length, results_file=results_file)
 
     if not os.path.exists(score_file):
         with open(score_file, 'w') as scrf:
